@@ -1,0 +1,6 @@
+scanner:
+  ignore:
+    - .git
+    - bin
+    - tests
+

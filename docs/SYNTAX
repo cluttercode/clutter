@@ -1,0 +1,49 @@
+[# %stop #]
+
+[# tag #]
+[# tag scope #]
+
+shorthand: [# .tag #] [# ./tag #] <- relative to where it mentioned.
+
+scope can be either relative or absolute:
+
+[# tag ../main.go #] <- not allowed!
+
+[# tag cmd/clutter.main.go:foo() #]
+
+----
+
+[# tag sub-tag #]
+
+---
+
+custom rules for creating tags
+
+
+
+
+
+---------
+
+
+--- mark ---
+[# here #]
+
+[# here hint #]
+
+[# here scope=. #] [# .here #]
+
+[# @see here #] [# here see #]
+
+[# ./here a=b c d=e #]
+
+[# @a=b here c d=e scope="./" #]
+
+[# there repo="github.com/foo/bar" #]
+
+
+----
+
+linter:
+  - file_pattern: "boo/*.go"
+    mark_pattern: "boo_${FN}"
