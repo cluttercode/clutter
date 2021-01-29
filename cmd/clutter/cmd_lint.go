@@ -15,7 +15,7 @@ var (
 	lintCommand = cli.Command{
 		Name:    "lint",
 		Aliases: []string{"l"},
-		Usage:   "lint usage",
+		Usage:   "check marks against lint rules",
 		Action: func(c *cli.Context) error {
 			linter, err := linter.NewLinter(z.Named("linter"), cfg.Linter)
 			if err != nil {

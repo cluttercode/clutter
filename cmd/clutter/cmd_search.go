@@ -19,6 +19,7 @@ var (
 	searchCommand = cli.Command{
 		Name:    "search",
 		Aliases: []string{"s"},
+		Usage:   "search index for tags and attributes patterns",
 		Flags: []cli.Flag{
 			&cli.BoolFlag{
 				Name:        "regexp",

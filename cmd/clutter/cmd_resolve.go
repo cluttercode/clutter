@@ -22,6 +22,7 @@ var (
 	resolveCommand = cli.Command{
 		Name:    "resolve",
 		Aliases: []string{"r"},
+		Usage:   "for use by IDEs: resolve tags according to specific instance of a tag",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:        "loc",
