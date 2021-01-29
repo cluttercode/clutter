@@ -58,6 +58,7 @@ var (
 			&lintCommand,
 			&searchCommand,
 			&resolveCommand,
+			&versionCommand,
 		},
 		Before: func(c *cli.Context) error {
 			if err := loadConfig(opts.configPath); err != nil {
