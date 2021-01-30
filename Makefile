@@ -19,6 +19,9 @@ all: clean shellcheck clutter lint test
 clean:
 	rm -fR "$(BINDIR)/*"
 
+.PHONY: bin
+bin: clutter
+
 .PHONY: clutter
 clutter:
 	go build -o $(BINDIR)/clutter $(GO_BUILD_OPTS) ./cmd/clutter
@@ -41,3 +44,7 @@ lint:
 .PHONY: shellcheck
 shellcheck:
 	find . -name \*.sh | xargs docker run --rm -v "$(shell pwd):/code" -w /code koalaman/shellcheck:stable -e SC2059
+
+.PHONY: install
+install:
+	go install ./cmd/clutter
