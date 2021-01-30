@@ -1,1 +1,0 @@
--i TEST/index -c empty-file s -a x=1

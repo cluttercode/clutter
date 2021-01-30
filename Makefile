@@ -35,7 +35,7 @@ test-unit:
 
 .PHONY: test-end-to-end
 test-end-to-end:
-	./tests/others/run.sh
+	./tests/cli/run.sh
 
 .PHONY: lint
 lint:
