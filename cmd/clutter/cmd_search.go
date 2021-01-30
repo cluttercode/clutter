@@ -54,7 +54,7 @@ var (
 			if searchOpts.regexp {
 				patternCompiler = strmatcher.CompileRegexpMatcher
 			} else if searchOpts.glob {
-				patternCompiler = strmatcher.CompileRegexpMatcher
+				patternCompiler = strmatcher.CompileGlobMatcher
 			}
 
 			names, attrs := c.Args().Slice(), searchOpts.attrs.Value()
