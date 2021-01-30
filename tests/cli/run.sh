@@ -11,6 +11,11 @@ TESTS="${1-*.test}"
 
 export CLUTTER="../../bin/clutter"
 
+if [[ ! -x ${CLUTTER} ]]; then
+  echo "error: clutter need to be built first. run: make clutter".
+  exit 1
+fi
+
 for t in ${TESTS}; do
   printf "${BWHITE}${t}${NC}:\n"
   ./clitest "$t"
