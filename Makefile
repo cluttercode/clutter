@@ -34,7 +34,7 @@ test-unit:
 	$(GOTEST) $(GO_TEST_OPTS) ./...
 
 .PHONY: test-end-to-end
-test-end-to-end:
+test-end-to-end: clutter
 	./tests/cli/run.sh
 
 .PHONY: lint
