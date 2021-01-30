@@ -7,7 +7,7 @@ NC='\033[0m'
 
 cd "$(dirname "$0")"
 
-TESTS="${1-*.test}"
+TESTS="${1-*.clitest}"
 
 export CLUTTER="../../bin/clutter"
 
