@@ -39,9 +39,10 @@ func makeBuiltin(cfg ToolConfig) (toolFunc, error) {
 				if err := f(&RawElement{
 					Text: text,
 					Loc: Loc{
-						Path:   path,
-						Line:   i + 1,
-						Column: l + 1,
+						Path:        path,
+						Line:        i + 1,
+						StartColumn: l + 1,
+						EndColumn:   r,
 					},
 				}); err != nil {
 					return fmt.Errorf("%s:%d.%d: %w", path, i+1, l+1, err)

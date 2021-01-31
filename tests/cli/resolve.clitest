@@ -1,0 +1,12 @@
+$ ${CLUTTER} -i index.1 r --loc foo/bar:5.5
+meow loc=foo/bar:5.5-15
+$ ${CLUTTER} -i index.1 r --loc foo/bar:1.1
+meow scope=cat loc=foo/bar:1.1-10
+$ ${CLUTTER} -i index.1 r --loc foo/bar:2.2
+woof loc=foo/bar:2.2-10 see
+woof loc=bar/baz/boo:11.2-20 see=somewhere
+$ ${CLUTTER} -i index.1 r --loc bla:1; echo $?
+
+error: loc: invalid
+1
+$

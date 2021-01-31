@@ -41,7 +41,6 @@ custom rules for creating tags
 
 [# there repo="github.com/foo/bar" #]
 
-
 ----
 
 linter:

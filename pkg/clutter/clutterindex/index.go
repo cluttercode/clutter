@@ -7,7 +7,7 @@ import (
 	"sort"
 )
 
-const versionMarker = "# v1"
+const versionMarker = "# v2"
 
 type Index struct{ entries []*Entry }
 
