@@ -88,12 +88,12 @@ var (
 				index := clutterindex.NewIndex(ents)
 
 				if indexOpts.print {
-					_ = clutterindex.Write("stdout", index)
+					_ = clutterindex.Write("stdout", index, Version)
 				}
 
 				z.Infow("writing index", "n", index.Size())
 
-				if err := clutterindex.Write(opts.indexPath, index); err != nil {
+				if err := clutterindex.Write(opts.indexPath, index, Version); err != nil {
 					return fmt.Errorf("index write: %w", err)
 				}
 

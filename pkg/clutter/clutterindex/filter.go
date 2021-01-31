@@ -45,7 +45,7 @@ func FileSource(path string) (next func() (*Entry, error), done func(), err erro
 		}
 
 		if first {
-			if text != versionMarker {
+			if !strings.HasPrefix(text, versionMarker+" ") {
 				return nil, fmt.Errorf("missing or incompatible index version marker - please reindex")
 			}
 

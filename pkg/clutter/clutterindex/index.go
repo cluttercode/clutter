@@ -7,7 +7,7 @@ import (
 	"sort"
 )
 
-const versionMarker = "# v3"
+const versionMarker = "# v4"
 
 type Index struct{ entries []*Entry }
 
@@ -46,7 +46,7 @@ func (i *Index) Add(ents []*Entry) *Index {
 
 func (i *Index) Size() int { return len(i.entries) }
 
-func Write(path string, index *Index) error {
+func Write(path string, index *Index, comment string) error {
 	var (
 		f      *os.File
 		commit = func() error { return nil }
@@ -81,7 +81,7 @@ func Write(path string, index *Index) error {
 		}
 	}
 
-	fmt.Fprintln(f, versionMarker)
+	fmt.Fprintf(f, "%s %s\n", versionMarker, comment)
 
 	for _, i := range index.entries {
 		text := i.marshal() + "\n"
