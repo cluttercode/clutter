@@ -11,7 +11,7 @@ const versionMarker = "# v4"
 
 type Index struct{ entries []*Entry }
 
-// [# index-entry-sorting #] sorts by name, then scope and finally loc.
+// [# index-entry-sorting #] sorts by name, then loc.
 
 type sorter []*Entry
 
@@ -20,19 +20,11 @@ func (i sorter) Swap(a, b int) { i[a], i[b] = i[b], i[a] }
 func (i sorter) Less(a, b int) bool {
 	aa, bb := i[a], i[b]
 
-	if aa.Name < bb.Name {
-		return true
-	} else if aa.Name != bb.Name {
-		return false
+	if aa.Name == bb.Name {
+		return aa.Loc.Less(bb.Loc)
 	}
 
-	if aas, bbs := aa.Attrs["scope"], bb.Attrs["scope"]; aas < bbs {
-		return true
-	} else if aas != bbs {
-		return false
-	}
-
-	return aa.Loc.Less(bb.Loc)
+	return aa.Name < bb.Name
 }
 
 func NewIndex(ents []*Entry) *Index { return (&Index{}).Add(ents) }

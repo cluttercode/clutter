@@ -145,27 +145,20 @@ func (e *Entry) marshal() string {
 	w := csv.NewWriter(b)
 	w.Comma = ' '
 
-	rs := []string{e.Name}
+	rs := []string{e.Name, e.Loc.String()}
 
-	attrs := make(map[string]string, len(e.Attrs)+1)
+	attrs := make(map[string]string, len(e.Attrs))
+	ks := make([]string, 0, len(attrs))
+
 	for k, v := range e.Attrs {
 		attrs[k] = v
-	}
 
-	ks := make([]string, 0, len(attrs)+1)
-
-	for k := range e.Attrs {
 		if k != "scope" { // this is handled separately below.
 			ks = append(ks, k)
 		}
 	}
 
 	sort.Strings(ks)
-
-	// Loc is second only to scope.
-	attrs["loc"] = e.Loc.String()
-
-	ks = append([]string{"loc"}, ks...)
 
 	// Scope always first because it's important.
 	if scope := e.Attrs["scope"]; scope != "" {
@@ -197,36 +190,24 @@ func (e *Entry) unmarshal(text string) error {
 
 	e.Name = fs[0]
 
-	e.Attrs = make(map[string]string, len(fs)-1)
+	var locptr *scanner.Loc
 
-	loc := false
+	if locptr, err = scanner.ParseLocString(fs[1]); err != nil {
+		return fmt.Errorf("loc: %w", err)
+	}
 
-	for _, f := range fs[1:] {
+	e.Loc = *locptr
+
+	e.Attrs = make(map[string]string, len(fs)-2)
+
+	for _, f := range fs[2:] {
 		parts := strings.SplitN(f, "=", 2)
-
-		if parts[0] == "loc" {
-			loc = true
-
-			var locptr *scanner.Loc
-
-			if locptr, err = scanner.ParseLocString(parts[1]); err != nil {
-				return fmt.Errorf("loc: %w", err)
-			}
-
-			e.Loc = *locptr
-
-			continue
-		}
 
 		if len(parts) == 1 {
 			e.Attrs[parts[0]] = ""
 		} else {
 			e.Attrs[parts[0]] = parts[1]
 		}
-	}
-
-	if !loc {
-		return fmt.Errorf("no loc attr")
 	}
 
 	return nil
