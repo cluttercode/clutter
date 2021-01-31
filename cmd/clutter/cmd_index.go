@@ -17,9 +17,8 @@ import (
 
 var (
 	indexOpts = struct {
-		watch     bool
-		interval  time.Duration
-		noINotify bool
+		watch, noINotify, print bool
+		interval                time.Duration
 	}{
 		interval: 30 * time.Second,
 	}
@@ -42,6 +41,11 @@ var (
 				Name:        "no-inotify",
 				Aliases:     []string{"nin"},
 				Destination: &indexOpts.noINotify,
+			},
+			&cli.BoolFlag{
+				Name:        "print",
+				Aliases:     []string{"p"},
+				Destination: &indexOpts.print,
 			},
 		},
 		Aliases: []string{"i"},
@@ -82,6 +86,10 @@ var (
 				}
 
 				index := clutterindex.NewIndex(ents)
+
+				if indexOpts.print {
+					_ = clutterindex.Write("stdout", index)
+				}
 
 				z.Infow("writing index", "n", index.Size())
 

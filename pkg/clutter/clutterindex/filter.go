@@ -5,43 +5,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
-
-	"github.com/cluttercode/clutter/pkg/strmatcher"
 )
-
-func NewEntriesFilter(c strmatcher.Compiler, names, attrs []string) (func(*Entry) bool, error) {
-	nm, err := strmatcher.NewMatchers(c, names)
-	if err != nil {
-		return nil, fmt.Errorf("invalid name matchers: %w", err)
-	}
-
-	am, err := strmatcher.NewMatchers(c, attrs)
-	if err != nil {
-		return nil, fmt.Errorf("invalid name matchers: %w", err)
-	}
-
-	return func(ent *Entry) bool {
-		if len(names) != 0 && !nm.Any(ent.Name) {
-			return false
-		}
-
-		for _, a := range am {
-			found := false
-
-			for _, b := range ent.AttrsWithLoc().Strings() {
-				if found = a(b); found {
-					break
-				}
-			}
-
-			if !found {
-				return false
-			}
-		}
-
-		return true
-	}, nil
-}
 
 func SliceSource(index *Index) func() (*Entry, error) {
 	rest := index.entries

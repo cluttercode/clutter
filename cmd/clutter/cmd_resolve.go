@@ -44,7 +44,7 @@ var (
 			index, err := clutterindex.Filter(
 				src,
 				func(ent *clutterindex.Entry) (bool, error) {
-					if ent.Loc.Line == loc.Line && loc.StartColumn >= ent.Loc.StartColumn && loc.EndColumn <= ent.Loc.EndColumn {
+					if ent.Loc.Path == loc.Path && ent.Loc.Line == loc.Line && loc.StartColumn >= ent.Loc.StartColumn && loc.EndColumn <= ent.Loc.EndColumn {
 						given = ent
 					}
 
@@ -62,18 +62,23 @@ var (
 				return fmt.Errorf("no mark at loc")
 			}
 
+			z.Infow("resolved mark", "mark", given)
+
+			matcher := func(ent *clutterindex.Entry) bool { return given.Name == ent.Name && ent.IsReferredBy(given) }
+
+			if _, search := given.IsSearch(); search {
+				matcher, err = given.Matcher()
+				if err != nil {
+					return fmt.Errorf("invalid search mark")
+				}
+			}
+
 			if err := clutterindex.ForEach(
 				clutterindex.SliceSource(index),
 				func(ent *clutterindex.Entry) (_ error) {
-					if given.Name != ent.Name {
-						return
+					if matcher(ent) {
+						fmt.Println(ent.String())
 					}
-
-					if !ent.IsReferredBy(given) {
-						return
-					}
-
-					fmt.Println(ent.String())
 
 					return
 				},

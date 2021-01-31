@@ -10,11 +10,12 @@ import (
 
 func TestParseElement(t *testing.T) {
 	tests := []struct {
-		text  string
-		path  string
-		err   bool
-		name  string
-		attrs map[string]string
+		text   string
+		path   string
+		err    bool
+		name   string
+		attrs  map[string]string
+		search bool
 	}{
 		{
 			err: true,
@@ -153,6 +154,41 @@ func TestParseElement(t *testing.T) {
 			name: "meow",
 			path: "some_file_at_root",
 		},
+		{
+			text: "? _ x=\"any*\"",
+			name: "_",
+			attrs: map[string]string{
+				"search": "exact",
+				"x":      "any*",
+			},
+			search: true,
+		},
+		{
+			text: "?g bla x=\"any*\"",
+			name: "bla",
+			attrs: map[string]string{
+				"search": "glob",
+				"x":      "any*",
+			},
+			search: true,
+		},
+		{
+			text: "?g \"*\" x=\"any*\"",
+			name: "*",
+			attrs: map[string]string{
+				"search": "glob",
+				"x":      "any*",
+			},
+			search: true,
+		},
+		{
+			text: "?g \"*\"",
+			name: "*",
+			attrs: map[string]string{
+				"search": "glob",
+			},
+			search: true,
+		},
 	}
 
 	for _, test := range tests {
@@ -180,6 +216,9 @@ func TestParseElement(t *testing.T) {
 
 			assert.Equal(t, test.name, ent.Name)
 			assert.EqualValues(t, test.attrs, ent.Attrs)
+
+			_, s := ent.IsSearch()
+			assert.Equal(t, test.search, s)
 		})
 	}
 }

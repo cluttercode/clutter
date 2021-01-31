@@ -7,10 +7,13 @@ import (
 	"strings"
 
 	"github.com/cluttercode/clutter/internal/pkg/scanner"
+
+	"github.com/cluttercode/clutter/pkg/strmatcher"
 )
 
 type Attrs map[string]string
 
+// used for [# govaluate-params #].
 type AttrsStruct struct {
 	as Attrs
 }
@@ -32,20 +35,85 @@ func (a AttrsStruct) Has(k string) bool {
 	return ok
 }
 
-func (a Attrs) Strings() []string {
-	strs := make([]string, 0, len(a))
-
-	for k, v := range a {
-		strs = append(strs, AttrToString(k, v))
-	}
-
-	return strs
-}
-
 type Entry struct {
 	Name  string
 	Attrs Attrs
 	Loc   scanner.Loc
+}
+
+func (e *Entry) IsSearch() (patternType string, yes bool) {
+	patternType, yes = e.Attrs["search"]
+	return
+}
+
+func (e *Entry) Matcher() (func(*Entry) bool, error) {
+	pt, _ := e.IsSearch()
+
+	var compile strmatcher.Compiler
+
+	switch pt {
+	case "exact":
+		compile = strmatcher.CompileExactMatcher
+	case "regexp":
+		compile = strmatcher.CompileRegexpMatcher
+	case "glob":
+		compile = strmatcher.CompileGlobMatcher
+	default:
+		return nil, fmt.Errorf("unknown pattern type")
+	}
+
+	matchName := func(string) bool { return true }
+	if e.Name != "" {
+		var err error
+		matchName, err = compile(e.Name)
+		if err != nil {
+			return nil, fmt.Errorf("name pattern error: %w", err)
+		}
+	}
+
+	attrsMatchers := make(map[string]func(string) bool, len(e.Attrs))
+	for k, v := range e.Attrs {
+		if k == "search" {
+			continue
+		}
+
+		m, err := compile(v)
+		if err != nil {
+			return nil, fmt.Errorf("invalid pattern %q for %q:, %w", v, k, err)
+		}
+
+		attrsMatchers[k] = m
+	}
+
+	return func(other *Entry) bool {
+		if _, search := other.IsSearch(); search {
+			return false
+		}
+
+		if !matchName(other.Name) {
+			return false
+		}
+
+		for k, m := range attrsMatchers {
+			any := false
+
+			for a, v := range other.AttrsWithLoc() {
+				if a != k {
+					continue
+				}
+
+				if any = m(v); any {
+					break
+				}
+			}
+
+			if !any {
+				return false
+			}
+		}
+
+		return true
+	}, nil
 }
 
 func (e *Entry) IsReferredBy(them *Entry) bool {

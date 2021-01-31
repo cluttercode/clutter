@@ -39,7 +39,7 @@ test-end-to-end: clutter
 
 .PHONY: lint
 lint:
-	docker run --rm -v "$(shell pwd):/code" -w /code golangci/golangci-lint:v1.35.2 golangci-lint run
+	docker run --rm -v "$(shell pwd):/code" -w /code golangci/golangci-lint:v1.26.0 golangci-lint run
 
 .PHONY: shellcheck
 shellcheck:

@@ -8,9 +8,9 @@ $ ${CLUTTER} -i index.1 s meow
 meow scope=cat loc=foo/bar:1.1-10
 meow loc=foo/bar:5.5-15
 $ ${CLUTTER} -i index.1 s nosuchthing
-$ ${CLUTTER} -i index.1 s -a scope=cat
+$ ${CLUTTER} -i index.1 s scope=cat
 meow scope=cat loc=foo/bar:1.1-10
-$ ${CLUTTER} -i index.1 s -g -a loc=foo\*
+$ ${CLUTTER} -i index.1 s -g loc=foo\*
 meow scope=cat loc=foo/bar:1.1-10
 meow loc=foo/bar:5.5-15
 woof loc=foo/bar:2.2-10 see

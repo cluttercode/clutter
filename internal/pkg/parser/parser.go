@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 	"text/scanner"
 	"unicode"
@@ -16,6 +17,8 @@ import (
 // [# %stop #]
 // [# @attr1=v1 @attr2=v2 ./name attr3=v1 attr4 ... attrN #]
 // [# %cont #]
+
+const exact = "exact"
 
 var (
 	validNameRegexp     = regexp.MustCompile(`^[\w_][\w_\:\-\.\/]*$`)
@@ -32,6 +35,8 @@ func ParseElement(elem *clutterScanner.RawElement) (*clutterindex.Entry, error) 
 	s.Error = func(_ *scanner.Scanner, msg string) { err = fmt.Errorf("%s", msg) }
 
 	ent := clutterindex.Entry{Loc: elem.Loc, Attrs: map[string]string{}}
+
+	search := ""
 
 	var state func(string, bool) error
 
@@ -55,6 +60,20 @@ func ParseElement(elem *clutterScanner.RawElement) (*clutterindex.Entry, error) 
 					v += "/"
 				}
 			}
+		} else if k == "search" {
+			// search types need to correspond to [# search-cli-exp-type-flags #].
+			switch v {
+			case "", exact:
+				search = exact
+			case "g", "gl":
+				search = "glob"
+			case "e", "re":
+				search = "regexp"
+			default:
+				return fmt.Errorf("invalid search type: %q", v)
+			}
+
+			v = search
 		}
 
 		ent.Attrs[k] = v
@@ -69,8 +88,12 @@ func ParseElement(elem *clutterScanner.RawElement) (*clutterindex.Entry, error) 
 				return addAttr(k, "")
 			}
 
-			if tok[0] == '"' && tok[len(tok)-1] == '"' {
-				tok = tok[1 : len(tok)-1]
+			if tok[0] == '"' {
+				var err error
+				tok, err = strconv.Unquote(tok)
+				if err != nil {
+					return fmt.Errorf("invalid quotes: %w", err)
+				}
 			}
 
 			if !eq {
@@ -112,6 +135,10 @@ func ParseElement(elem *clutterScanner.RawElement) (*clutterindex.Entry, error) 
 			return fmt.Errorf("empty element")
 		}
 
+		if tok[0] == '?' {
+			return addAttr("search", tok[1:])
+		}
+
 		if tok[0] == '@' {
 			state = attr(tok[1:], state)
 			return nil
@@ -131,8 +158,18 @@ func ParseElement(elem *clutterScanner.RawElement) (*clutterindex.Entry, error) 
 			tok = tok[1:]
 		}
 
-		if !validNameRegexp.MatchString(tok) {
-			return fmt.Errorf("invalid name: %q", tok)
+		if tok[0] == '"' {
+			tok, err = strconv.Unquote(tok)
+			if err != nil {
+				return fmt.Errorf("invalid quotes: %w", err)
+			}
+		}
+
+		// TODO: also validate patterns.
+		if search == "" || search == exact {
+			if !validNameRegexp.MatchString(tok) {
+				return fmt.Errorf("invalid name: %q", tok)
+			}
 		}
 
 		ent.Name = tok
@@ -150,7 +187,7 @@ func ParseElement(elem *clutterScanner.RawElement) (*clutterindex.Entry, error) 
 		if i == 0 {
 			dot = r == '.'
 
-			return (isPre && (r == '@' || r == '.')) || unicode.IsLetter(r)
+			return (isPre && (r == '@' || r == '.' || r == '?')) || unicode.IsLetter(r)
 		}
 
 		if i == 1 && dot && r == '/' {

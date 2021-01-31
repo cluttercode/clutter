@@ -7,7 +7,7 @@ import (
 	"sort"
 )
 
-const versionMarker = "# v2"
+const versionMarker = "# v3"
 
 type Index struct{ entries []*Entry }
 
@@ -22,10 +22,14 @@ func (i sorter) Less(a, b int) bool {
 
 	if aa.Name < bb.Name {
 		return true
+	} else if aa.Name != bb.Name {
+		return false
 	}
 
-	if aa.Attrs["scope"] < bb.Attrs["scope"] {
+	if aas, bbs := aa.Attrs["scope"], bb.Attrs["scope"]; aas < bbs {
 		return true
+	} else if aas != bbs {
+		return false
 	}
 
 	return aa.Loc.Less(bb.Loc)

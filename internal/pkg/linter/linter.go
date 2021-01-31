@@ -249,7 +249,7 @@ func (l *Linter) shell(ctx context.Context, cmdParts []string, ent *clutterindex
 func (l *Linter) eval(eval *govaluate.EvaluableExpression, ent *clutterindex.Entry) (bool, error) {
 	l.z.Infow("checking expression")
 
-	res, err := eval.Evaluate(map[string]interface{}{"name": ent.Name, "path": ent.Loc.Path, "attrs": ent.Attrs.ToStruct()})
+	res, err := eval.Evaluate(map[string]interface{}{"name": ent.Name, "path": ent.Loc.Path, "attrs": ent.Attrs.ToStruct()}) // [# govaluate-params #]
 	if err != nil {
 		l.z.Errorw("eval error", "err", err)
 		return false, err
