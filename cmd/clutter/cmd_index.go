@@ -164,7 +164,7 @@ var (
 							return
 
 						case event := <-watcher.Events:
-							if event.Op&fsnotify.Write == fsnotify.Write {
+							if event.Op&(fsnotify.Write|fsnotify.Remove|fsnotify.Rename|fsnotify.Create) != 0 {
 								z.Infow("file modified", "event", event.Name)
 								done <- errRefresh
 								return
