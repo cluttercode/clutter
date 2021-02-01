@@ -12,4 +12,30 @@ error: loc: invalid
 $ ${CLUTTER} -i index.1 r --loc nowhere:1.1
 woof foo/bar:2.2-10 see
 woof bar/baz/boo:11.2-20 see=somewhere
+$ ${CLUTTER} -i index.1 r --loc nowhere:1.1 -p 2> /dev/null; echo $?
+woof foo/bar:2.2-10 see
+woof bar/baz/boo:11.2-20 see=somewhere
+0
+$ ${CLUTTER} -i index.1 r --loc nowhere:1.1 -n 2> /dev/null; echo $?
+woof foo/bar:2.2-10 see
+woof bar/baz/boo:11.2-20 see=somewhere
+0
+$ ${CLUTTER} -i index.1 r --loc a:1.1
+z a:1.1-10
+z b:2.2-10
+z c:3.3-10
+$ ${CLUTTER} -i index.1 r --loc a:1.1 -n
+z b:2.2-10
+$ ${CLUTTER} -i index.1 r --loc a:1.1 -p
+$ ${CLUTTER} -i index.1 r --loc b:2.2 -p
+z a:1.1-10
+$ ${CLUTTER} -i index.1 r --loc b:2.2 -n
+z c:3.3-10
+$ ${CLUTTER} -i index.1 r --loc c:3.3 -p
+z b:2.2-10
+$ ${CLUTTER} -i index.1 r --loc c:3.3 -n
+$ ${CLUTTER} -i index.1 r --loc c:3.3 -n -p; echo $?
+
+error: --prev and --next are mutually exclusive
+1
 $

@@ -6,7 +6,7 @@ import (
 	cli "github.com/urfave/cli/v2"
 )
 
-const Version = "v0.0.8"
+const Version = "v0.0.9"
 
 var (
 	versionCommand = cli.Command{

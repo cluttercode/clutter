@@ -65,6 +65,8 @@ func FileSource(path string) (next func() (*Entry, error), done func(), err erro
 	return
 }
 
+var ErrStop = fmt.Errorf("stop")
+
 func ForEach(next func() (*Entry, error), fn func(*Entry) error) error {
 	_, err := Filter(next, func(ent *Entry) (bool, error) { return false, fn(ent) })
 	return err
@@ -88,6 +90,10 @@ func Filter(next func() (*Entry, error), filter func(*Entry) (bool, error)) (*In
 		}
 
 		incl, err := filter(ent)
+
+		if err == ErrStop {
+			break
+		}
 
 		if err != nil {
 			return nil, fmt.Errorf("filter: %w", err)
