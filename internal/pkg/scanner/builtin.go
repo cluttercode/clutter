@@ -3,8 +3,12 @@ package scanner
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"os"
 	"strings"
+
+	"go.uber.org/zap"
+	"golang.org/x/tools/godoc/util"
 )
 
 func makeBuiltin(cfg ToolConfig) (toolFunc, error) {
@@ -13,13 +17,29 @@ func makeBuiltin(cfg ToolConfig) (toolFunc, error) {
 		return nil, fmt.Errorf("invalid bracket: %w", err)
 	}
 
-	return func(path string, f func(*RawElement) error) error {
+	buf := make([]byte, 128)
+
+	return func(z *zap.SugaredLogger, path string, f func(*RawElement) error) error {
 		fp, err := os.Open(path)
 		if err != nil {
 			return fmt.Errorf("open %q: %w", path, err)
 		}
 
 		defer fp.Close()
+
+		n, err := fp.Read(buf)
+		if err != nil && err != io.EOF {
+			return fmt.Errorf("read: %w", err)
+		}
+
+		if !util.IsText(buf[:n]) {
+			z.Debug("not a text file, ignoring")
+			return nil
+		}
+
+		if ofs, err := fp.Seek(0, 0); err != nil || ofs != 0 {
+			return fmt.Errorf("seek: ofs=%d, err=%w", ofs, err)
+		}
 
 		scanner := bufio.NewScanner(fp)
 
@@ -50,7 +70,10 @@ func makeBuiltin(cfg ToolConfig) (toolFunc, error) {
 			}
 		}
 
-		if err := scanner.Err(); err != nil {
+		if err := scanner.Err(); err == bufio.ErrTooLong {
+			z.Warn("file has tokens that are too long")
+			return nil
+		} else if err != nil {
 			return fmt.Errorf("scan: %w", err)
 		}
 

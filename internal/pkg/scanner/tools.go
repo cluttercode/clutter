@@ -2,9 +2,11 @@ package scanner
 
 import (
 	"fmt"
+
+	"go.uber.org/zap"
 )
 
-type toolFunc func(path string, f func(*RawElement) error) error
+type toolFunc func(z *zap.SugaredLogger, path string, f func(*RawElement) error) error
 
 var tools = map[string]func(ToolConfig) (toolFunc, error){
 	"builtin": makeBuiltin,

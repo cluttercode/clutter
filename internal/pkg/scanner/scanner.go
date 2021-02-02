@@ -81,7 +81,7 @@ func NewScanner(z *zap.SugaredLogger, cfg Config) (func(root string, f func(*Raw
 
 			stopped := false
 
-			if err := tool(path, func(elem *RawElement) error {
+			if err := tool(z, path, func(elem *RawElement) error {
 				if strings.HasPrefix(elem.Text, "%") {
 					switch elem.Text[1:] {
 					case "stop":
