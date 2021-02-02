@@ -3,6 +3,7 @@ package scanner
 import (
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/go-git/go-git/plumbing/format/gitignore"
 	"go.uber.org/zap"
@@ -20,13 +21,21 @@ func NewFilter(z *zap.SugaredLogger, cfg Config) (func(string, os.FileInfo) (boo
 	return func(path string, fi os.FileInfo) (bool, error) {
 		isDir := fi.IsDir()
 
-		if exclude(filepath.SplitList(path), isDir) {
+		split := strings.Split(path, string(filepath.Separator))
+
+		z := z.With("path", split, "is_dir", isDir)
+
+		if exclude(split, isDir) {
+			z.Debug("exclude")
+
 			if isDir {
 				return false, filepath.SkipDir
 			}
 
 			return false, nil
 		}
+
+		z.Debug("include")
 
 		return !isDir, nil
 	}, nil
