@@ -7,8 +7,8 @@ import (
 
 var (
 	version = "dev"
-	commit  = "none"
-	date    = "unknown"
+	commit  = ""
+	date    = ""
 )
 
 func main() {
