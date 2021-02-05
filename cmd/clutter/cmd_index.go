@@ -87,13 +87,15 @@ var (
 
 				index := clutterindex.NewIndex(ents)
 
+				meta := fmt.Sprintf("%s %s", version, commit)
+
 				if indexOpts.print {
-					_ = clutterindex.Write("stdout", index, Version)
+					_ = clutterindex.Write("stdout", index, meta)
 				}
 
 				z.Infow("writing index", "n", index.Size())
 
-				if err := clutterindex.Write(opts.indexPath, index, Version); err != nil {
+				if err := clutterindex.Write(opts.indexPath, index, meta); err != nil {
 					return fmt.Errorf("index write: %w", err)
 				}
 

@@ -6,15 +6,13 @@ import (
 	cli "github.com/urfave/cli/v2"
 )
 
-const Version = "v0.0.11"
-
 var (
 	versionCommand = cli.Command{
 		Name:    "version",
 		Aliases: []string{"v"},
 		Usage:   "show current clutter tool version",
 		Action: func(*cli.Context) error {
-			fmt.Println(Version)
+			fmt.Printf("%s %s %s\n", version, commit, date)
 			return nil
 		},
 	}

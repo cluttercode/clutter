@@ -16,4 +16,6 @@
 
 .idea/
 
+dist/
+
 .clutter/index
