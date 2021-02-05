@@ -9,24 +9,7 @@ scope can be either relative or absolute:
 
 [# tag ../main.go #] <- not allowed!
 
-[# tag cmd/clutter.main.go:foo() #]
-
-----
-
-[# tag sub-tag #]
-
----
-
-custom rules for creating tags
-
-
-
-
-
----------
-
-
---- mark ---
+--- tag ---
 [# here #]
 
 [# here hint #]
@@ -45,4 +28,4 @@ custom rules for creating tags
 
 linter:
   - file_pattern: "boo/*.go"
-    mark_pattern: "boo_${FN}"
+    tag_pattern: "boo_${FN}"

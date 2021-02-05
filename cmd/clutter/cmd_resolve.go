@@ -38,7 +38,7 @@ var (
 				Aliases:     []string{"l"},
 				Destination: &resolveOpts.loc,
 				Required:    true,
-				Usage:       "mark position as path:line.col",
+				Usage:       "tag position as path:line.col",
 			},
 		},
 		Action: func(c *cli.Context) error {
@@ -76,22 +76,22 @@ var (
 			}
 
 			if given == nil {
-				return fmt.Errorf("no mark at loc")
+				return fmt.Errorf("no tag at loc")
 			}
 
-			z.Infow("resolved mark", "mark", given)
+			z.Infow("resolved tag", "tag", given)
 
 			matcher := func(ent *clutterindex.Entry) bool { return given.Name == ent.Name && ent.IsReferredBy(given) }
 
 			if _, search := given.IsSearch(); search {
 				if resolveOpts.prev || resolveOpts.next {
 					resolveOpts.prev, resolveOpts.next = false, false
-					z.Warn("--next and --prev are ignored when resolving a search mark")
+					z.Warn("--next and --prev are ignored when resolving a search tag")
 				}
 
 				matcher, err = given.Matcher()
 				if err != nil {
-					return fmt.Errorf("invalid search mark")
+					return fmt.Errorf("invalid search tag")
 				}
 			}
 
