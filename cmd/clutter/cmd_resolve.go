@@ -5,6 +5,7 @@ import (
 
 	cli "github.com/urfave/cli/v2"
 
+	"github.com/cluttercode/clutter/internal/pkg/resolver"
 	"github.com/cluttercode/clutter/internal/pkg/scanner"
 
 	"github.com/cluttercode/clutter/pkg/clutter/clutterindex"
@@ -56,13 +57,13 @@ var (
 				return fmt.Errorf("read index: %w", err)
 			}
 
-			var given *clutterindex.Entry
+			var what *clutterindex.Entry
 
 			index, err := clutterindex.Filter(
 				src,
 				func(ent *clutterindex.Entry) (bool, error) {
 					if ent.Loc.Path == loc.Path && ent.Loc.Line == loc.Line && loc.StartColumn >= ent.Loc.StartColumn && loc.EndColumn <= ent.Loc.EndColumn {
-						given = ent
+						what = ent
 					}
 
 					return true, nil
@@ -75,81 +76,30 @@ var (
 				return fmt.Errorf("index: %w", err)
 			}
 
-			if given == nil {
+			if what == nil {
 				return fmt.Errorf("no tag at loc")
 			}
 
-			z.Infow("resolved tag", "tag", given)
+			z := z.Named("resolver").With("what", what)
 
-			matcher := func(ent *clutterindex.Entry) bool { return given.Name == ent.Name && ent.IsReferredBy(given) }
+			z.Info("resolved tag")
 
-			if _, search := given.IsSearch(); search {
-				if resolveOpts.prev || resolveOpts.next {
-					resolveOpts.prev, resolveOpts.next = false, false
-					z.Warn("--next and --prev are ignored when resolving a search tag")
-				}
+			r := resolver.ResolveList
 
-				matcher, err = given.Matcher()
-				if err != nil {
-					return fmt.Errorf("invalid search tag")
-				}
+			if resolveOpts.next {
+				r = resolver.ResolveNext
+			} else if resolveOpts.prev {
+				r = resolver.ResolvePrev
 			}
 
-			var hold *clutterindex.Entry
+			ents, err := r(z, what, index)
 
-			if err := clutterindex.ForEach(
-				clutterindex.SliceSource(index),
-				func(ent *clutterindex.Entry) error {
-					match := matcher(ent)
+			if err != nil {
+				return fmt.Errorf("resolver: %w", err)
+			}
 
-					z.Debugw("considering", "ent", ent, "match", match)
-
-					if !match {
-						return nil
-					}
-
-					if resolveOpts.prev {
-						if ent.Loc == given.Loc {
-							if hold == nil {
-								z.Debugw("found given, but nothing held")
-								return clutterindex.ErrStop
-							}
-
-							z.Debugw("found given, emit held", "ent", hold)
-
-							fmt.Println(hold.String())
-
-							return clutterindex.ErrStop
-						}
-
-						hold = ent
-						z.Debugw("holding", "ent", hold)
-
-						return nil
-					}
-
-					if resolveOpts.next {
-						if hold == nil {
-							if ent.Loc == given.Loc {
-								hold = ent
-								z.Debugw("found given", "ent", hold)
-							}
-
-							return nil
-						}
-
-						z.Debugw("emit current", "ent", hold)
-
-						fmt.Println(ent.String())
-						return clutterindex.ErrStop
-					}
-
-					fmt.Println(ent.String())
-
-					return nil
-				},
-			); err != nil {
-				return fmt.Errorf("filter: %w", err)
+			for _, ent := range ents {
+				fmt.Println(ent.String())
 			}
 
 			return nil
