@@ -26,14 +26,26 @@ z b:2.2-10
 z c:3.3-10
 $ ${CLUTTER} -i index.1 r --loc a:1.1 -n
 z b:2.2-10
+$ ${CLUTTER} -i index.1 r --loc a:1.1 -n -c
+z b:2.2-10
 $ ${CLUTTER} -i index.1 r --loc a:1.1 -p
+$ ${CLUTTER} -i index.1 r --loc a:1.1 -p -c
+z c:3.3-10
 $ ${CLUTTER} -i index.1 r --loc b:2.2 -p
+z a:1.1-10
+$ ${CLUTTER} -i index.1 r --loc b:2.2 -p -c
 z a:1.1-10
 $ ${CLUTTER} -i index.1 r --loc b:2.2 -n
 z c:3.3-10
+$ ${CLUTTER} -i index.1 r --loc b:2.2 -n -c
+z c:3.3-10
 $ ${CLUTTER} -i index.1 r --loc c:3.3 -p
 z b:2.2-10
+$ ${CLUTTER} -i index.1 r --loc c:3.3 -p -c
+z b:2.2-10
 $ ${CLUTTER} -i index.1 r --loc c:3.3 -n
+$ ${CLUTTER} -i index.1 r --loc c:3.3 -n -c
+z a:1.1-10
 $ ${CLUTTER} -i index.1 r --loc c:3.3 -n -p; echo $?
 
 error: --prev and --next are mutually exclusive
