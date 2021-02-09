@@ -65,19 +65,105 @@ cat cat.py:2 lang=python
 
 $ clutter search -g cat lang=py\*
 cat cat.py:2 lang=python
+
+$ clutter resolve --loc README.md:2
+cat README.md:2
+cat cat.c:3 lang=c
+cat cat.go:6 lang=go
+cat cat.hs:1 lang=haskell
+cat cat.py:2 lang=python
+
+$ clutter resolve --loc README.md:2 --next
+cat cat.c:3 lang=c
 ```
 
-## Syntax
+## Tag Syntax
+
+Each tag has a name and key-value attributes. Each attribute key must be unique.
 
 ```
-[# name attr1 attr2=value2 #]
+[# name attr1 attr2=value2 ... #]
 ```
 
-`[# @attr name #]` translates to `[# name attr #]`, which is the same as `[# name attr= #]`.
+- `name` must satisfy the regular expression  `[\w_][\w_\:\-\.\/]`.
+- `attr`s (keys) must satisfy the regular expression `[\w_][\w_\:\-]`.
 
-`[# .name #]` translates to `[# name scope="current filename" #]`.
+### Special Attributes
 
-`[# ./name #]` translates to `[# name scope="current dir" #]`.
+- `scope` denotes where to look for matching tags. This can be either a path to a specific file, or to a directory and end with a `/`.  
+
+  **NOTE**: this is experimental and might change in the future.
+
+- `search` is used for search tags.  See below.
+
+### Syntactic Sugar
+
+- `[# @attr name #]` translates to `[# name attr #]`, which is the same as `[# name attr= #]`.
+
+- `[# .name #]` translates to `[# name scope="current filename" #]`.
+
+- `[# ./name #]` translates to `[# name scope="current dir" #]`.
+
+### Search Tags
+
+Search tags are tags that instead of declaring a specific place in the code, denote a pattern to search for.
+
+- `[# ?gl * lang=hs #]` means search for any tag name (using glob) that has `lang=hs`.
+
+- `[# ? cat #]` means search for all tags with the name `cat` using exact match.
+
+- `[# ?re "^c.+"  ]` search for all tags that begin with a `c` (using regexp) and has at least one more character in their names.
+
+While these tags are indexed, clutter will never return these as a search/resolve result.
+
+These tags are written as a normal tag to the index, with an added attribute `search` that contain the type of matcher used. For example:
+
+```
+* somewhere:1.1-19 lang=hs search=glob
+```
+
+## Index
+
+```
+$ clutter index
+```
+
+Creates an index, which by default written to `.clutter/index`. This might be useful for very large repositories to speed up other commands. The index will be useful in the future for searching a repository for tags without the need to clone it first. 
+
+The index can be ignored by specifying `-i ""` to the cli, for example:
+
+```
+$ clutter -i "" search cat
+```
+
+## Structure
+
+Each index entry is of the form:
+
+```
+name path:line.startcol-endcol attrs
+```
+
+`line`, `startcol` and `endcol` start at 1.  `attrs` are in a `key=value` format and are sorted. The index as a whole is sorted first by the tag name, then its location, then its scope, and last the rest of the sorted attributes. Essentially, `cat .clutter/index | sort` should have the same output as `cat .clutter/index`.
+
+The index is treated as a `csv` file with a single space as a field delimiter. If any other spaces present in any other field, expect it to be properly quoted by clutter.
+
+All other commands try to read from the index first, and if it does not exist - scan the tree instead.
+
+## Configuration
+
+By default clutter tries to read the file `.clutter/config.yaml` in the current directory. The full structure of the file is as follows:
+
+```yaml
+scanner:
+  ignore-index: false # do not try to read the index unless explicitly asked to using -i.
+  ignore: [".git"]    # .gitignore formatted list of paths to ignore
+  bracket:            # bracket configuration, default it as shown.
+    left: "[#"
+    right: "#]"
+```
+
+**TODO**: describe lint, tools.
 
 ## Integrations
 
@@ -111,8 +197,7 @@ make install
 
 ## TODO
 
-- [ ] Docs: resolve, search
-- [ ] More tests
+- [ ] Docs: resolve, search.
+- [ ] More tests.
 - [ ] Cross repo.
-
 - [ ] Only account for tags in comments.
