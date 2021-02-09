@@ -21,8 +21,9 @@ const (
 func configPath(p string) string { return filepath.Join(defaultClutterDir, p) }
 
 type config struct {
-	Scanner scanner.Config `json:"scanner"`
-	Linter  linter.Config  `json:"linter"`
+	IgnoreIndex bool           `json:"ignore-index"`
+	Scanner     scanner.Config `json:"scanner"`
+	Linter      linter.Config  `json:"linter"`
 }
 
 var (

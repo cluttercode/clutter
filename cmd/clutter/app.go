@@ -13,15 +13,29 @@ var (
 		debug      bool
 		indexPath  string
 		configPath string
+		nocolor    bool
 	}{
 		logLevel:   "info",
 		indexPath:  configPath(indexFilename),
 		configPath: configPath(configFilename),
 	}
 
+	indexFlag = cli.StringFlag{
+		Name:        "index-path",
+		Aliases:     []string{"i"},
+		Value:       opts.indexPath,
+		Destination: &opts.indexPath,
+	}
+
 	app = cli.App{
 		UseShortOptionHandling: true,
 		Flags: []cli.Flag{
+			&cli.BoolFlag{
+				Name:        "nocolor",
+				Aliases:     []string{"nc"},
+				Destination: &opts.nocolor,
+				Usage:       "do not colorize logs",
+			},
 			&cli.BoolFlag{
 				Name:        "verbose",
 				Aliases:     []string{"v"},
@@ -41,17 +55,12 @@ var (
 				Destination: &opts.logLevel,
 			},
 			&cli.StringFlag{
-				Name:        "index-path",
-				Aliases:     []string{"i"},
-				Value:       opts.indexPath,
-				Destination: &opts.indexPath,
-			},
-			&cli.StringFlag{
 				Name:        "config-path",
 				Aliases:     []string{"c"},
 				Value:       opts.configPath,
 				Destination: &opts.configPath,
 			},
+			&indexFlag,
 		},
 		Commands: []*cli.Command{
 			&indexCommand,
@@ -75,7 +84,7 @@ var (
 				level = "debug"
 			}
 
-			if err := initLogger(level); err != nil {
+			if err := initLogger(level, !opts.nocolor); err != nil {
 				return fmt.Errorf("init logger: %w", err)
 			}
 
@@ -85,3 +94,15 @@ var (
 		},
 	}
 )
+
+func indexPaths(c *cli.Context) []string {
+	if c.IsSet(indexFlag.Name) {
+		return []string{opts.indexPath}
+	}
+
+	if cfg.IgnoreIndex || opts.indexPath == "" {
+		return []string{""}
+	}
+
+	return []string{opts.indexPath, ""}
+}

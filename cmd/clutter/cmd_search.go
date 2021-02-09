@@ -79,7 +79,7 @@ var (
 				return fmt.Errorf("matcher: %w", err)
 			}
 
-			src, done, err := ReadIndex(opts.indexPath)
+			src, done, err := readIndex(c)
 			if err != nil {
 				return fmt.Errorf("read index: %w", err)
 			}

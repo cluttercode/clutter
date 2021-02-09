@@ -24,7 +24,7 @@ func FileSource(path string) (next func() (*Entry, error), done func(), err erro
 	if path == "stdin" || path == "-" {
 		f = os.Stdin
 	} else if f, err = os.Open(path); err != nil {
-		return nil, nil, fmt.Errorf("open: %w", err)
+		return nil, nil, err // don't wrap here - checking for IsNotExist in caller.
 	}
 
 	done = func() { f.Close() }

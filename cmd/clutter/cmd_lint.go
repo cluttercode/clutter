@@ -22,7 +22,7 @@ var (
 				return fmt.Errorf("linter: %w", err)
 			}
 
-			src, done, err := ReadIndex(opts.indexPath)
+			src, done, err := readIndex(c)
 			if err != nil {
 				return fmt.Errorf("read index: %w", err)
 			}

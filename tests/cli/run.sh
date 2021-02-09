@@ -18,5 +18,5 @@ fi
 
 for t in ${TESTS}; do
   printf "${BWHITE}${t}${NC}:\n"
-  ./clitest "$t"
+  ./clitest --diff-options "-u -w" "$t"
 done

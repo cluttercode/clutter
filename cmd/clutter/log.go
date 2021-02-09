@@ -10,11 +10,16 @@ import (
 
 var z *zap.SugaredLogger = zap.NewNop().Sugar()
 
-func initLogger(level string) error {
+func initLogger(level string, color bool) error {
 	zcfg := zap.NewDevelopmentConfig()
 
 	zcfg.DisableStacktrace = true
+
 	zcfg.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
+	if !color {
+		zcfg.EncoderConfig.EncodeLevel = zapcore.CapitalLevelEncoder
+	}
+
 	zcfg.EncoderConfig.EncodeTime = func(time.Time, zapcore.PrimitiveArrayEncoder) {}
 
 	if level != "debug" {
