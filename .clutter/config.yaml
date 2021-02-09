@@ -3,4 +3,3 @@ scanner:
     - .git
     - bin
     - tests
-    - README.md

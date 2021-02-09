@@ -1,3 +1,5 @@
+<!-- [# %stop #] -->
+
 # [# Clutter #]
 
 Clutter facilitates an unintrusive way to link textual content in a source tree. Think ctags for comments.
