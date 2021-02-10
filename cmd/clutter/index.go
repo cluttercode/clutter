@@ -42,29 +42,31 @@ func readIndex(c *cli.Context) (func() (*clutterindex.Entry, error), func(), err
 	return nil, nil, fmt.Errorf("no index file exist")
 }
 
+func readAdHocIndex() (func() (*clutterindex.Entry, error), error) {
+	scan, err := scanner.NewScanner(z.Named("scanner"), cfg.Scanner)
+	if err != nil {
+		return nil, fmt.Errorf("new scanner: %w", err)
+	}
+
+	elems, err := scan(".", nil)
+	if err != nil {
+		return nil, fmt.Errorf("scan: %w", err)
+	}
+
+	ents, err := parser.ParseElements(elems)
+	if err != nil {
+		return nil, fmt.Errorf("parser: %w", err)
+	}
+
+	return clutterindex.SliceSource(clutterindex.NewIndex(ents)), nil
+}
+
 func readSpecificIndex(filename string) (src func() (*clutterindex.Entry, error), done func(), err error) {
 	if filename == "" {
-		scan, err := scanner.NewScanner(z.Named("scanner"), cfg.Scanner)
-		if err != nil {
-			return nil, nil, fmt.Errorf("new scanner: %w", err)
-		}
-
-		elems, err := scan(".", nil)
-		if err != nil {
-			return nil, nil, fmt.Errorf("scan: %w", err)
-		}
-
-		ents, err := parser.ParseElements(elems)
-		if err != nil {
-			return nil, nil, fmt.Errorf("parser: %w", err)
-		}
-
-		src = clutterindex.SliceSource(clutterindex.NewIndex(ents))
 		done = func() {}
-
-		return src, done, nil
-	} else if src, done, err = clutterindex.FileSource(filename); err != nil {
-		return nil, nil, err // do not wrap error.
+		src, err = readAdHocIndex()
+	} else {
+		src, done, err = clutterindex.FileSource(filename)
 	}
 
 	return
