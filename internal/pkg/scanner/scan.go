@@ -11,12 +11,11 @@ import (
 	"golang.org/x/tools/godoc/util"
 )
 
-func Scan(
+func ScanReader(
 	z *zap.SugaredLogger,
 	cfg BracketConfig,
-	path string,
-	r io.ReadSeeker, // if nil, file is opened from path.
-	f func(*RawElement) error,
+	r io.ReadSeeker,
+	f func(*RawElement) error, // will not include path.
 ) error {
 	re, err := cfg.Regexp()
 	if err != nil {
@@ -24,17 +23,6 @@ func Scan(
 	}
 
 	buf := make([]byte, 128)
-
-	if r == nil {
-		fp, err := os.Open(path)
-		if err != nil {
-			return fmt.Errorf("open %q: %w", path, err)
-		}
-
-		defer fp.Close()
-
-		r = fp
-	}
 
 	n, err := r.Read(buf)
 	if err != nil && err != io.EOF {
@@ -68,13 +56,12 @@ func Scan(
 			if err := f(&RawElement{
 				Text: text,
 				Loc: Loc{
-					Path:        path,
 					Line:        i + 1,
 					StartColumn: l + 1,
 					EndColumn:   r,
 				},
 			}); err != nil {
-				return fmt.Errorf("%s:%d.%d: %w", path, i+1, l+1, err)
+				return fmt.Errorf("%d.%d: %w", i+1, l+1, err)
 			}
 		}
 	}
@@ -87,4 +74,28 @@ func Scan(
 	}
 
 	return nil
+}
+
+func ScanFile(
+	z *zap.SugaredLogger,
+	cfg BracketConfig,
+	path string,
+	f func(*RawElement) error,
+) error {
+	fp, err := os.Open(path)
+	if err != nil {
+		return fmt.Errorf("open %q: %w", path, err)
+	}
+
+	defer fp.Close()
+
+	return ScanReader(
+		z,
+		cfg,
+		fp,
+		func(e *RawElement) error {
+			e.Loc.Path = path
+			return f(e)
+		},
+	)
 }

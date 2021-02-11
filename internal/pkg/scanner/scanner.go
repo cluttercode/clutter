@@ -35,7 +35,7 @@ func NewScanner(z *zap.SugaredLogger, cfg Config) (func(root string, f func(*Raw
 
 			stopped := false
 
-			if err := Scan(z, cfg.Bracket, path, nil, func(elem *RawElement) error {
+			if err := ScanFile(z, cfg.Bracket, path, func(elem *RawElement) error {
 				if strings.HasPrefix(elem.Text, "%") {
 					switch elem.Text[1:] {
 					case "stop":
