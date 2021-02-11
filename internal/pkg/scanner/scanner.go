@@ -6,7 +6,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/gobwas/glob"
 	"go.uber.org/zap"
 )
 
@@ -14,36 +13,6 @@ func NewScanner(z *zap.SugaredLogger, cfg Config) (func(root string, f func(*Raw
 	filter, err := NewFilter(z, cfg)
 	if err != nil {
 		return nil, err
-	}
-
-	tools := make([]func(string) toolFunc, len(cfg.Tools))
-
-	for i, tc := range cfg.Tools {
-		if err := func(tc ToolConfig) error {
-			glob, err := glob.Compile(tc.Pattern)
-			if err != nil {
-				return fmt.Errorf("invalid type glob: \"%s\" -> %w", tc.Pattern, err)
-			}
-
-			tc.Bracket.OverrideWith(cfg.Bracket)
-
-			tool, err := makeTool(tc)
-			if err != nil {
-				return fmt.Errorf("error making tool \"%s\": %w", tc.Tool, err)
-			}
-
-			tools[i] = func(path string) toolFunc {
-				if glob.Match(path) {
-					return tool
-				}
-
-				return nil
-			}
-
-			return nil
-		}(tc); err != nil {
-			return nil, err
-		}
 	}
 
 	return func(root string, f func(*RawElement) error) ([]*RawElement, error) {
@@ -64,24 +33,9 @@ func NewScanner(z *zap.SugaredLogger, cfg Config) (func(root string, f func(*Raw
 				return err
 			}
 
-			z.Debug("reading")
-
-			var tool toolFunc
-
-			for _, tm := range tools {
-				if tool = tm(path); tool != nil {
-					break
-				}
-			}
-
-			if tool == nil {
-				z.Debug("no tool configured for file")
-				return nil
-			}
-
 			stopped := false
 
-			if err := tool(z, path, func(elem *RawElement) error {
+			if err := Scan(z, cfg.Bracket, path, nil, func(elem *RawElement) error {
 				if strings.HasPrefix(elem.Text, "%") {
 					switch elem.Text[1:] {
 					case "stop":

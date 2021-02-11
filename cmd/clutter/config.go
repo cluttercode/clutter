@@ -33,12 +33,6 @@ var (
 				Left:  "[#",
 				Right: "#]",
 			},
-			Tools: []scanner.ToolConfig{
-				{
-					Pattern: "*",
-					Tool:    "builtin",
-				},
-			},
 		},
 	}
 

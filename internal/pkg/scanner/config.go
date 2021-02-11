@@ -26,15 +26,7 @@ func (c *BracketConfig) Regexp() (*regexp.Regexp, error) {
 	)
 }
 
-type ToolConfig struct {
-	Pattern string                 `json:"pattern"`
-	Tool    string                 `json:"tool"`
-	Params  map[string]interface{} `json:"params"`
-	Bracket BracketConfig          `json:"bracket"`
-}
-
 type Config struct {
 	Bracket BracketConfig `json:"bracket"`
 	Ignore  []string      `json:"ignore"`
-	Tools   []ToolConfig  `json:"tools"`
 }
