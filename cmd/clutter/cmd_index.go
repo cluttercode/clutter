@@ -9,10 +9,9 @@ import (
 	"github.com/fsnotify/fsnotify"
 	cli "github.com/urfave/cli/v2"
 
+	"github.com/cluttercode/clutter/internal/pkg/index"
 	"github.com/cluttercode/clutter/internal/pkg/parser"
 	"github.com/cluttercode/clutter/internal/pkg/scanner"
-
-	"github.com/cluttercode/clutter/pkg/clutter/clutterindex"
 )
 
 var (
@@ -73,17 +72,17 @@ var (
 					return fmt.Errorf("parser: %w", err)
 				}
 
-				index := clutterindex.NewIndex(ents)
+				idx := index.NewIndex(ents)
 
 				meta := fmt.Sprintf("%s %s", version, commit)
 
 				if indexOpts.print {
-					_ = clutterindex.Write("stdout", index, meta)
+					_ = index.Write("stdout", idx, meta)
 				}
 
-				z.Infow("writing index", "n", index.Size())
+				z.Infow("writing index", "n", idx.Size())
 
-				if err := clutterindex.Write(opts.indexPath, index, meta); err != nil {
+				if err := index.Write(opts.indexPath, idx, meta); err != nil {
 					return fmt.Errorf("index write: %w", err)
 				}
 

@@ -11,7 +11,7 @@ import (
 
 	clutterScanner "github.com/cluttercode/clutter/internal/pkg/scanner"
 
-	"github.com/cluttercode/clutter/pkg/clutter/clutterindex"
+	"github.com/cluttercode/clutter/internal/pkg/index"
 )
 
 // [# %stop #]
@@ -25,7 +25,7 @@ var (
 	validAttrNameRegexp = regexp.MustCompile(`^[\w_][\w_\:\-]*$`)
 )
 
-func ParseElement(elem *clutterScanner.RawElement) (*clutterindex.Entry, error) {
+func ParseElement(elem *clutterScanner.RawElement) (*index.Entry, error) {
 	var s scanner.Scanner
 	s.Init(strings.NewReader(elem.Text))
 	s.Mode = scanner.ScanIdents | scanner.ScanStrings | scanner.ScanRawStrings
@@ -34,7 +34,7 @@ func ParseElement(elem *clutterScanner.RawElement) (*clutterindex.Entry, error) 
 
 	s.Error = func(_ *scanner.Scanner, msg string) { err = fmt.Errorf("%s", msg) }
 
-	ent := clutterindex.Entry{Loc: elem.Loc, Attrs: map[string]string{}}
+	ent := index.Entry{Loc: elem.Loc, Attrs: map[string]string{}}
 
 	search := ""
 
@@ -222,8 +222,8 @@ func ParseElement(elem *clutterScanner.RawElement) (*clutterindex.Entry, error) 
 	return &ent, nil
 }
 
-func ParseElements(elems []*clutterScanner.RawElement) ([]*clutterindex.Entry, error) {
-	ents := make([]*clutterindex.Entry, len(elems))
+func ParseElements(elems []*clutterScanner.RawElement) ([]*index.Entry, error) {
+	ents := make([]*index.Entry, len(elems))
 	for i, el := range elems {
 		var err error
 		ents[i], err = ParseElement(el)

@@ -12,12 +12,12 @@ import (
 	"github.com/gobwas/glob"
 	"go.uber.org/zap"
 
-	"github.com/cluttercode/clutter/pkg/clutter/clutterindex"
+	"github.com/cluttercode/clutter/internal/pkg/index"
 )
 
 type internalRule struct {
 	checkPath func(string) bool
-	eval      func(context.Context, *clutterindex.Entry) (bool, error)
+	eval      func(context.Context, *index.Entry) (bool, error)
 }
 
 type Linter struct {
@@ -123,13 +123,13 @@ func (ir *internalRule) init(l *Linter, r Rule) error {
 			return fmt.Errorf("expr: %w", err)
 		}
 
-		ir.eval = func(_ context.Context, ent *clutterindex.Entry) (bool, error) {
+		ir.eval = func(_ context.Context, ent *index.Entry) (bool, error) {
 			return l.eval(evalexpr, ent)
 		}
 	}
 
 	if cmd := r.Shell; len(cmd) > 0 {
-		ir.eval = func(ctx context.Context, ent *clutterindex.Entry) (bool, error) {
+		ir.eval = func(ctx context.Context, ent *index.Entry) (bool, error) {
 			return l.shell(ctx, cmd, ent)
 		}
 	}
@@ -161,7 +161,7 @@ func (l *Linter) Rule(i int) *Rule {
 	return &l.config.Rules[i]
 }
 
-func (l *Linter) LintRule(ctx context.Context, i int, ent *clutterindex.Entry) (bool, error) {
+func (l *Linter) LintRule(ctx context.Context, i int, ent *index.Entry) (bool, error) {
 	rule := l.rules[i]
 
 	if !rule.checkPath(ent.Loc.Path) {
@@ -177,7 +177,7 @@ func (l *Linter) LintRule(ctx context.Context, i int, ent *clutterindex.Entry) (
 	return pass, nil
 }
 
-func (l *Linter) Lint(ctx context.Context, ent *clutterindex.Entry) ([]int, error) {
+func (l *Linter) Lint(ctx context.Context, ent *index.Entry) ([]int, error) {
 	var fails []int
 
 	for i, rule := range l.config.Rules {
@@ -203,7 +203,7 @@ func (l *Linter) Lint(ctx context.Context, ent *clutterindex.Entry) ([]int, erro
 	return fails, nil
 }
 
-func entVars(ent *clutterindex.Entry) map[string]interface{} {
+func entVars(ent *index.Entry) map[string]interface{} {
 	m := map[string]interface{}{
 		"NAME": ent.Name,
 		"PATH": ent.Loc.Path,
@@ -216,7 +216,7 @@ func entVars(ent *clutterindex.Entry) map[string]interface{} {
 	return m
 }
 
-func (l *Linter) shell(ctx context.Context, cmdParts []string, ent *clutterindex.Entry) (bool, error) {
+func (l *Linter) shell(ctx context.Context, cmdParts []string, ent *index.Entry) (bool, error) {
 	vars := entVars(ent)
 
 	varsList := make([]string, 0, len(vars))
@@ -246,7 +246,7 @@ func (l *Linter) shell(ctx context.Context, cmdParts []string, ent *clutterindex
 	return true, nil
 }
 
-func (l *Linter) eval(eval *govaluate.EvaluableExpression, ent *clutterindex.Entry) (bool, error) {
+func (l *Linter) eval(eval *govaluate.EvaluableExpression, ent *index.Entry) (bool, error) {
 	l.z.Infow("checking expression")
 
 	res, err := eval.Evaluate(map[string]interface{}{"name": ent.Name, "path": ent.Loc.Path, "attrs": ent.Attrs.ToStruct()}) // [# govaluate-params #]

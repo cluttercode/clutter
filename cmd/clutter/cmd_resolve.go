@@ -6,10 +6,9 @@ import (
 	cli "github.com/urfave/cli/v2"
 	"go.uber.org/zap"
 
+	"github.com/cluttercode/clutter/internal/pkg/index"
 	"github.com/cluttercode/clutter/internal/pkg/resolver"
 	"github.com/cluttercode/clutter/internal/pkg/scanner"
-
-	"github.com/cluttercode/clutter/pkg/clutter/clutterindex"
 )
 
 var (
@@ -64,11 +63,11 @@ var (
 				return fmt.Errorf("read index: %w", err)
 			}
 
-			var what *clutterindex.Entry
+			var what *index.Entry
 
-			index, err := clutterindex.Filter(
+			idx, err := index.Filter(
 				src,
-				func(ent *clutterindex.Entry) (bool, error) {
+				func(ent *index.Entry) (bool, error) {
 					if ent.Loc.Path == loc.Path && ent.Loc.Line == loc.Line && loc.StartColumn >= ent.Loc.StartColumn && loc.EndColumn <= ent.Loc.EndColumn {
 						what = ent
 					}
@@ -91,8 +90,8 @@ var (
 
 			z.Info("resolved tag")
 
-			r := func(z *zap.SugaredLogger, what *clutterindex.Entry, index *clutterindex.Index, _ bool) ([]*clutterindex.Entry, error) {
-				return resolver.ResolveList(z, what, index)
+			r := func(z *zap.SugaredLogger, what *index.Entry, idx *index.Index, _ bool) ([]*index.Entry, error) {
+				return resolver.ResolveList(z, what, idx)
 			}
 
 			if resolveOpts.next {
@@ -101,7 +100,7 @@ var (
 				r = resolver.ResolvePrev
 			}
 
-			ents, err := r(z, what, index, resolveOpts.cyclic)
+			ents, err := r(z, what, idx, resolveOpts.cyclic)
 
 			if err != nil {
 				return fmt.Errorf("resolver: %w", err)

@@ -6,9 +6,8 @@ import (
 
 	cli "github.com/urfave/cli/v2"
 
+	"github.com/cluttercode/clutter/internal/pkg/index"
 	"github.com/cluttercode/clutter/internal/pkg/linter"
-
-	"github.com/cluttercode/clutter/pkg/clutter/clutterindex"
 )
 
 var (
@@ -33,9 +32,9 @@ var (
 
 			pass := true
 
-			if err := clutterindex.ForEach(
+			if err := index.ForEach(
 				src,
-				func(ent *clutterindex.Entry) error {
+				func(ent *index.Entry) error {
 					z.Debugw("checking", "loc", ent.Loc)
 
 					failedRulesIndices, err := linter.Lint(ctx, ent)

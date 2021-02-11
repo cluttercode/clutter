@@ -5,29 +5,29 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/cluttercode/clutter/pkg/clutter/clutterindex"
+	"github.com/cluttercode/clutter/internal/pkg/index"
 )
 
 type params struct{ next, prev, cycle, first, last bool }
 
-func ResolveList(z *zap.SugaredLogger, what *clutterindex.Entry, index *clutterindex.Index) ([]*clutterindex.Entry, error) {
-	return resolve(z, what, index, params{})
+func ResolveList(z *zap.SugaredLogger, what *index.Entry, idx *index.Index) ([]*index.Entry, error) {
+	return resolve(z, what, idx, params{})
 }
 
-func ResolveNext(z *zap.SugaredLogger, what *clutterindex.Entry, index *clutterindex.Index, cycle bool) ([]*clutterindex.Entry, error) {
-	return resolve(z, what, index, params{next: true, cycle: cycle})
+func ResolveNext(z *zap.SugaredLogger, what *index.Entry, idx *index.Index, cycle bool) ([]*index.Entry, error) {
+	return resolve(z, what, idx, params{next: true, cycle: cycle})
 }
 
-func ResolvePrev(z *zap.SugaredLogger, what *clutterindex.Entry, index *clutterindex.Index, cycle bool) ([]*clutterindex.Entry, error) {
-	return resolve(z, what, index, params{prev: true, cycle: cycle})
+func ResolvePrev(z *zap.SugaredLogger, what *index.Entry, idx *index.Index, cycle bool) ([]*index.Entry, error) {
+	return resolve(z, what, idx, params{prev: true, cycle: cycle})
 }
 
-func resolve(z *zap.SugaredLogger, what *clutterindex.Entry, index *clutterindex.Index, p params) ([]*clutterindex.Entry, error) {
+func resolve(z *zap.SugaredLogger, what *index.Entry, idx *index.Index, p params) ([]*index.Entry, error) {
 	if p.next && p.prev {
 		z.Panic("prev and next are mutually exclusive")
 	}
 
-	matcher := func(ent *clutterindex.Entry) bool { return what.Name == ent.Name && ent.IsReferredBy(what) }
+	matcher := func(ent *index.Entry) bool { return what.Name == ent.Name && ent.IsReferredBy(what) }
 
 	if _, search := what.IsSearch(); search {
 		if p.prev || p.next {
@@ -43,13 +43,13 @@ func resolve(z *zap.SugaredLogger, what *clutterindex.Entry, index *clutterindex
 	}
 
 	var (
-		hold *clutterindex.Entry
-		ents []*clutterindex.Entry
+		hold *index.Entry
+		ents []*index.Entry
 	)
 
-	if err := clutterindex.ForEach(
-		clutterindex.SliceSource(index),
-		func(ent *clutterindex.Entry) error {
+	if err := index.ForEach(
+		index.SliceSource(idx),
+		func(ent *index.Entry) error {
 			match := matcher(ent)
 
 			z.Debugw("considering", "ent", ent, "match", match)
@@ -62,14 +62,14 @@ func resolve(z *zap.SugaredLogger, what *clutterindex.Entry, index *clutterindex
 				if ent.Loc == what.Loc {
 					if hold == nil {
 						z.Debugw("found what, but nothing held")
-						return clutterindex.ErrStop
+						return index.ErrStop
 					}
 
 					z.Debugw("found what, emit held", "ent", hold)
 
 					ents = append(ents, hold)
 
-					return clutterindex.ErrStop
+					return index.ErrStop
 				}
 
 				hold = ent
@@ -92,13 +92,13 @@ func resolve(z *zap.SugaredLogger, what *clutterindex.Entry, index *clutterindex
 
 				ents = append(ents, ent)
 
-				return clutterindex.ErrStop
+				return index.ErrStop
 			}
 
 			ents = append(ents, ent)
 
 			if p.first {
-				return clutterindex.ErrStop
+				return index.ErrStop
 			}
 
 			return nil
@@ -109,14 +109,14 @@ func resolve(z *zap.SugaredLogger, what *clutterindex.Entry, index *clutterindex
 
 	if p.cycle && len(ents) == 0 {
 		if p.next {
-			return resolve(z, what, index, params{first: true})
+			return resolve(z, what, idx, params{first: true})
 		} else if p.prev {
-			return resolve(z, what, index, params{last: true})
+			return resolve(z, what, idx, params{last: true})
 		}
 	}
 
 	if p.last && len(ents) > 0 {
-		return []*clutterindex.Entry{ents[len(ents)-1]}, nil
+		return []*index.Entry{ents[len(ents)-1]}, nil
 	}
 
 	return ents, nil

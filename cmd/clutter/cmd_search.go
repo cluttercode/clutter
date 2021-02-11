@@ -6,7 +6,7 @@ import (
 
 	cli "github.com/urfave/cli/v2"
 
-	"github.com/cluttercode/clutter/pkg/clutter/clutterindex"
+	"github.com/cluttercode/clutter/internal/pkg/index"
 )
 
 var (
@@ -71,7 +71,7 @@ var (
 				attrs["search"] = "exact"
 			}
 
-			ent := clutterindex.Entry{Name: name, Attrs: attrs}
+			ent := index.Entry{Name: name, Attrs: attrs}
 			z.Infow("using matcher", "ent", ent)
 
 			matcher, err := ent.Matcher()
@@ -86,9 +86,9 @@ var (
 
 			defer done()
 
-			if err := clutterindex.ForEach(
+			if err := index.ForEach(
 				src,
-				func(ent *clutterindex.Entry) (_ error) {
+				func(ent *index.Entry) (_ error) {
 					if !matcher(ent) {
 						return
 					}

@@ -1,4 +1,4 @@
-package clutterindex
+package index
 
 import (
 	"encoding/csv"

@@ -9,10 +9,10 @@ import (
 	"github.com/cluttercode/clutter/internal/pkg/parser"
 	"github.com/cluttercode/clutter/internal/pkg/scanner"
 
-	"github.com/cluttercode/clutter/pkg/clutter/clutterindex"
+	"github.com/cluttercode/clutter/internal/pkg/index"
 )
 
-func readIndex(c *cli.Context) (func() (*clutterindex.Entry, error), func(), error) {
+func readIndex(c *cli.Context) (func() (*index.Entry, error), func(), error) {
 	paths := indexPaths(c)
 
 	z.Debugw("reading index", "paths", paths)
@@ -42,7 +42,7 @@ func readIndex(c *cli.Context) (func() (*clutterindex.Entry, error), func(), err
 	return nil, nil, fmt.Errorf("no index file exist")
 }
 
-func readAdHocIndex() (func() (*clutterindex.Entry, error), error) {
+func readAdHocIndex() (func() (*index.Entry, error), error) {
 	scan, err := scanner.NewScanner(z.Named("scanner"), cfg.Scanner)
 	if err != nil {
 		return nil, fmt.Errorf("new scanner: %w", err)
@@ -58,15 +58,15 @@ func readAdHocIndex() (func() (*clutterindex.Entry, error), error) {
 		return nil, fmt.Errorf("parser: %w", err)
 	}
 
-	return clutterindex.SliceSource(clutterindex.NewIndex(ents)), nil
+	return index.SliceSource(index.NewIndex(ents)), nil
 }
 
-func readSpecificIndex(filename string) (src func() (*clutterindex.Entry, error), done func(), err error) {
+func readSpecificIndex(filename string) (src func() (*index.Entry, error), done func(), err error) {
 	if filename == "" {
 		done = func() {}
 		src, err = readAdHocIndex()
 	} else {
-		src, done, err = clutterindex.FileSource(filename)
+		src, done, err = index.FileSource(filename)
 	}
 
 	return
