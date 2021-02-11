@@ -9,7 +9,15 @@ import (
 	"go.uber.org/zap"
 )
 
+var defaultIgnores = []string{
+	".git",
+}
+
 func NewFilter(z *zap.SugaredLogger, cfg Config) (func(string, os.FileInfo) (bool, error), error) {
+	if len(cfg.Ignore) == 0 {
+		cfg.Ignore = defaultIgnores
+	}
+
 	ignores := make([]gitignore.Pattern, len(cfg.Ignore))
 
 	for i, ig := range cfg.Ignore {
