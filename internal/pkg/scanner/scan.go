@@ -4,9 +4,9 @@ import (
 	"bufio"
 	"fmt"
 	"io"
-	"os"
 	"strings"
 
+	"github.com/spf13/afero"
 	"go.uber.org/zap"
 	"golang.org/x/tools/godoc/util"
 )
@@ -15,7 +15,7 @@ func ScanReader(
 	z *zap.SugaredLogger,
 	cfg BracketConfig,
 	r io.ReadSeeker,
-	f func(*RawElement) error, // will not include path.
+	f func(*RawElement) error, // will not include path. path is filled in [# .fill-path #].
 ) error {
 	re, err := cfg.Regexp()
 	if err != nil {
@@ -77,12 +77,17 @@ func ScanReader(
 }
 
 func ScanFile(
+	fs afero.Fs,
 	z *zap.SugaredLogger,
 	cfg BracketConfig,
 	path string,
 	f func(*RawElement) error,
 ) error {
-	fp, err := os.Open(path)
+	if fs == nil {
+		fs = afero.NewOsFs()
+	}
+
+	fp, err := fs.Open(path)
 	if err != nil {
 		return fmt.Errorf("open %q: %w", path, err)
 	}
@@ -94,7 +99,7 @@ func ScanFile(
 		cfg,
 		fp,
 		func(e *RawElement) error {
-			e.Loc.Path = path
+			e.Loc.Path = path // [# .fill-path #]
 			return f(e)
 		},
 	)

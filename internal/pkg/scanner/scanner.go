@@ -3,13 +3,17 @@ package scanner
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 	"strings"
 
+	"github.com/spf13/afero"
 	"go.uber.org/zap"
 )
 
-func NewScanner(z *zap.SugaredLogger, cfg Config) (func(root string, f func(*RawElement) error) ([]*RawElement, error), error) {
+func NewScanner(fs afero.Fs, z *zap.SugaredLogger, cfg Config) (func(root string, f func(*RawElement) error) ([]*RawElement, error), error) {
+	if fs == nil {
+		fs = afero.NewOsFs()
+	}
+
 	filter, err := NewFilter(z, cfg)
 	if err != nil {
 		return nil, err
@@ -22,7 +26,7 @@ func NewScanner(z *zap.SugaredLogger, cfg Config) (func(root string, f func(*Raw
 
 		var elems []*RawElement
 
-		if err := filepath.Walk(root, func(path string, fi os.FileInfo, err error) error {
+		if err := afero.Walk(fs, root, func(path string, fi os.FileInfo, err error) error {
 			z := z.With("path", path)
 
 			if err != nil {
@@ -35,7 +39,7 @@ func NewScanner(z *zap.SugaredLogger, cfg Config) (func(root string, f func(*Raw
 
 			stopped := false
 
-			if err := ScanFile(z, cfg.Bracket, path, func(elem *RawElement) error {
+			if err := ScanFile(fs, z, cfg.Bracket, path, func(elem *RawElement) error {
 				if strings.HasPrefix(elem.Text, "%") {
 					switch elem.Text[1:] {
 					case "stop":

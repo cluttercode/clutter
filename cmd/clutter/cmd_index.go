@@ -53,7 +53,7 @@ var (
 			scan := func() error {
 				z.Info("scanning")
 
-				scan, err := scanner.NewScanner(z.Named("scanner"), cfg.Scanner)
+				scan, err := scanner.NewScanner(nil, z.Named("scanner"), cfg.Scanner)
 				if err != nil {
 					return fmt.Errorf("new scanner: %w", err)
 				}

@@ -43,7 +43,7 @@ func readIndex(c *cli.Context) (func() (*index.Entry, error), func(), error) {
 }
 
 func readAdHocIndex() (func() (*index.Entry, error), error) {
-	scan, err := scanner.NewScanner(z.Named("scanner"), cfg.Scanner)
+	scan, err := scanner.NewScanner(nil, z.Named("scanner"), cfg.Scanner)
 	if err != nil {
 		return nil, fmt.Errorf("new scanner: %w", err)
 	}
