@@ -51,12 +51,6 @@ var (
 		Aliases: []string{"i"},
 		Usage:   "generate index database",
 		Action: func(c *cli.Context) error {
-			roots := c.Args().Slice()
-
-			if len(roots) == 0 {
-				roots = []string{"."}
-			}
-
 			scan := func() error {
 				z.Info("scanning")
 
@@ -65,19 +59,13 @@ var (
 					return fmt.Errorf("new scanner: %w", err)
 				}
 
-				var elems []*scanner.RawElement
+				elems, err := scan(".", func(e *scanner.RawElement) error {
+					z.Infow("found", "element", e)
+					return nil
+				})
 
-				for _, root := range roots {
-					elems1, err := scan(root, func(e *scanner.RawElement) error {
-						z.Infow("found", "element", e)
-						return nil
-					})
-
-					if err != nil {
-						return fmt.Errorf("%q scan: %w", root, err)
-					}
-
-					elems = append(elems, elems1...)
+				if err != nil {
+					return fmt.Errorf("scan: %w", err)
 				}
 
 				ents, err := parser.ParseElements(elems)
