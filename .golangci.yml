@@ -1,3 +1,5 @@
+run:
+  skip-dirs-use-defaults: true
 linters:
   disable-all: true
   enable:

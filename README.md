@@ -36,17 +36,6 @@ def cat(): # [# cat lang=python #]
   print("meow")
 ```
 
-`cat.c`:
-
-```c
-#include <stdio.h>
-
-void cat() { // [# cat lang=c #]
-	printf("meow\n")
-}
-
-```
-
 `cat.hs`:
 
 ```haskell
@@ -58,7 +47,6 @@ Clutter allows to:
 ```
 $ clutter search cat
 cat README.md:2.5-13
-cat cat.c:3.17-32 lang=c
 cat cat.go:5.17-33 lang=go
 cat cat.hs:1.27-48 lang=haskell
 cat cat.py:1.14-34 lang=python
@@ -68,13 +56,12 @@ cat cat.py:1.14-34 lang=python
 
 $ clutter resolve --loc README.md:2.5
 cat README.md:2.5-13
-cat cat.c:3.17-32 lang=c
 cat cat.go:5.17-33 lang=go
 cat cat.hs:1.27-48 lang=haskell
 cat cat.py:1.14-34 lang=python
 
 $ clutter resolve --loc README.md:2 --next
-cat cat.c:3.17-32 lang=c
+cat cat.go:5.17-33 lang=go
 ```
 
 ## Tag Syntax
@@ -156,9 +143,9 @@ By default clutter tries to read the file `.clutter/config.yaml` in the current 
 
 ```yaml
 scanner:
-  ignore-index: false # do not try to read the index unless explicitly asked to using -i.
-  ignore: [".git"]    # .gitignore formatted list of paths to ignore.
-  bracket:            # bracket configuration.
+  use-index: false  # ry to read the index first, else or if index does not exist - scan.
+  ignore: [".git"]  # .gitignore formatted list of paths to ignore.
+  bracket:          # bracket configuration.
     left: "[#"
     right: "#]"
 ```
