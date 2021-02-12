@@ -57,24 +57,24 @@ Clutter allows to:
 
 ```
 $ clutter search cat
-cat README.md:2
-cat cat.c:3 lang=c
-cat cat.go:6 lang=go
-cat cat.hs:1 lang=haskell
-cat cat.py:2 lang=python
+cat README.md:2.5-13
+cat cat.c:3.17-32 lang=c
+cat cat.go:5.17-33 lang=go
+cat cat.hs:1.27-48 lang=haskell
+cat cat.py:1.14-34 lang=python
 
 $ clutter search -g cat lang=py\*
-cat cat.py:2 lang=python
+cat cat.py:1.14-34 lang=python
 
-$ clutter resolve --loc README.md:2
-cat README.md:2
-cat cat.c:3 lang=c
-cat cat.go:6 lang=go
-cat cat.hs:1 lang=haskell
-cat cat.py:2 lang=python
+$ clutter resolve --loc README.md:2.5
+cat README.md:2.5-13
+cat cat.c:3.17-32 lang=c
+cat cat.go:5.17-33 lang=go
+cat cat.hs:1.27-48 lang=haskell
+cat cat.py:1.14-34 lang=python
 
 $ clutter resolve --loc README.md:2 --next
-cat cat.c:3 lang=c
+cat cat.c:3.17-32 lang=c
 ```
 
 ## Tag Syntax
@@ -152,18 +152,18 @@ All other commands try to read from the index first, and if it does not exist - 
 
 ## Configuration
 
-By default clutter tries to read the file `.clutter/config.yaml` in the current directory. The full structure of the file is as follows:
+By default clutter tries to read the file `.clutter/config.yaml` in the current directory. The full structure of the file is as follows, shown with default values:
 
 ```yaml
 scanner:
   ignore-index: false # do not try to read the index unless explicitly asked to using -i.
-  ignore: [".git"]    # .gitignore formatted list of paths to ignore
-  bracket:            # bracket configuration, default it as shown.
+  ignore: [".git"]    # .gitignore formatted list of paths to ignore.
+  bracket:            # bracket configuration.
     left: "[#"
     right: "#]"
 ```
 
-**TODO**: describe lint, tools.
+**TODO**: lint.
 
 ## Integrations
 
@@ -175,25 +175,36 @@ scanner:
 
 ### Using gobinaries
 
+For trustful people.
+
 ```shell
 curl -sf https://gobinaries.com/cluttercode/clutter/cmd/clutter@latest | sh
 ```
 
 ### Using go
 
+For the already initiated.
+
 ```shell
 go install github.com/cluttercode/clutter/cmd/clutter
 ```
 
+### From source
+
+For hardcore people.
+
+```shell
+git clone github.com/cluttercode/clutter
+cd clutter
+make install
+```
+
 ### Prebuilt binaries
+
+For old timers.
 
 See [releases](https://github.com/cluttercode/clutter/releases).
 
-### From source
-
-```shell
-make install
-```
 
 ## TODO
 
