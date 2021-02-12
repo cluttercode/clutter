@@ -48,7 +48,7 @@ func resolve(z *zap.SugaredLogger, what *index.Entry, idx *index.Index, p params
 	)
 
 	if err := index.ForEach(
-		index.SliceSource(idx),
+		idx,
 		func(ent *index.Entry) error {
 			match := matcher(ent)
 

@@ -2,6 +2,7 @@ package index
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"sort"
@@ -38,9 +39,22 @@ func (i *Index) Add(ents []*Entry) *Index {
 
 func (i *Index) Size() int { return len(i.entries) }
 
-func Write(path string, index *Index, comment string) error {
+func WriteEntries(w io.Writer, index *Index) error {
+	for _, i := range index.entries {
+		text := i.marshal() + "\n"
+
+		if _, err := w.Write([]byte(text)); err != nil {
+			return fmt.Errorf("write: %w", err)
+		}
+	}
+
+	return nil
+}
+
+func WriteFile(path string, index *Index, comment string) error {
 	var (
 		f      *os.File
+		done   = func() {}
 		commit = func() error { return nil }
 	)
 
@@ -64,6 +78,8 @@ func Write(path string, index *Index, comment string) error {
 			return fmt.Errorf("create: %w", err)
 		}
 
+		done = func() { f.Close() }
+
 		commit = func() error {
 			if err := os.Rename(tmpPath, path); err != nil {
 				return fmt.Errorf("move: %w", err)
@@ -75,16 +91,13 @@ func Write(path string, index *Index, comment string) error {
 
 	fmt.Fprintf(f, "%s %s\n", versionMarker, comment)
 
-	for _, i := range index.entries {
-		text := i.marshal() + "\n"
+	if err := WriteEntries(f, index); err != nil {
+		done()
 
-		if _, err := f.WriteString(text); err != nil {
-			f.Close()
-			return fmt.Errorf("write: %w", err)
-		}
+		return err
 	}
 
-	f.Close()
+	done()
 
 	return commit()
 }

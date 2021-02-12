@@ -79,15 +79,13 @@ var (
 				return fmt.Errorf("matcher: %w", err)
 			}
 
-			src, done, err := readIndex(c)
+			idx, err := readIndex(c)
 			if err != nil {
 				return fmt.Errorf("read index: %w", err)
 			}
 
-			defer done()
-
 			if err := index.ForEach(
-				src,
+				idx,
 				func(ent *index.Entry) (_ error) {
 					if !matcher(ent) {
 						return

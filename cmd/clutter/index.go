@@ -12,7 +12,7 @@ import (
 	"github.com/cluttercode/clutter/internal/pkg/index"
 )
 
-func readIndex(c *cli.Context) (func() (*index.Entry, error), func(), error) {
+func readIndex(c *cli.Context) (*index.Index, error) {
 	paths := indexPaths(c)
 
 	z.Debugw("reading index", "paths", paths)
@@ -20,7 +20,7 @@ func readIndex(c *cli.Context) (func() (*index.Entry, error), func(), error) {
 	for _, path := range paths {
 		z := z.With("path", path)
 
-		src, done, err := readSpecificIndex(path)
+		idx, err := readSpecificIndex(path)
 		if err != nil {
 			if os.IsNotExist(err) {
 				z.Warn("file does not exist")
@@ -31,18 +31,26 @@ func readIndex(c *cli.Context) (func() (*index.Entry, error), func(), error) {
 				path = "stdin"
 			}
 
-			return nil, nil, fmt.Errorf("%s: %w", path, err)
+			return nil, fmt.Errorf("%s: %w", path, err)
 		}
 
 		z.Info("index read")
 
-		return src, done, nil
+		return idx, nil
 	}
 
-	return nil, nil, fmt.Errorf("no index file exist")
+	return nil, fmt.Errorf("no index file exist")
 }
 
-func readAdHocIndex() (func() (*index.Entry, error), error) {
+func readSpecificIndex(filename string) (*index.Index, error) {
+	if filename == "" {
+		return readAdHocIndex()
+	}
+
+	return index.ReadFile(filename)
+}
+
+func readAdHocIndex() (*index.Index, error) {
 	scan, err := scanner.NewScanner(nil, z.Named("scanner"), cfg.Scanner)
 	if err != nil {
 		return nil, fmt.Errorf("new scanner: %w", err)
@@ -58,16 +66,5 @@ func readAdHocIndex() (func() (*index.Entry, error), error) {
 		return nil, fmt.Errorf("parser: %w", err)
 	}
 
-	return index.SliceSource(index.NewIndex(ents)), nil
-}
-
-func readSpecificIndex(filename string) (src func() (*index.Entry, error), done func(), err error) {
-	if filename == "" {
-		done = func() {}
-		src, err = readAdHocIndex()
-	} else {
-		src, done, err = index.FileSource(filename)
-	}
-
-	return
+	return index.NewIndex(ents), nil
 }

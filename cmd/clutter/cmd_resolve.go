@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	cli "github.com/urfave/cli/v2"
 	"go.uber.org/zap"
@@ -58,15 +59,15 @@ var (
 				return fmt.Errorf("loc: %w", err)
 			}
 
-			src, done, err := readIndex(c)
+			idx, err := readIndex(c)
 			if err != nil {
 				return fmt.Errorf("read index: %w", err)
 			}
 
 			var what *index.Entry
 
-			idx, err := index.Filter(
-				src,
+			idx, err = index.Filter(
+				idx,
 				func(ent *index.Entry) (bool, error) {
 					if ent.Loc.Path == loc.Path && ent.Loc.Line == loc.Line && loc.StartColumn >= ent.Loc.StartColumn && loc.EndColumn <= ent.Loc.EndColumn {
 						what = ent
@@ -75,8 +76,6 @@ var (
 					return true, nil
 				},
 			)
-
-			done()
 
 			if err != nil {
 				return fmt.Errorf("index: %w", err)
@@ -106,11 +105,7 @@ var (
 				return fmt.Errorf("resolver: %w", err)
 			}
 
-			for _, ent := range ents {
-				fmt.Println(ent.String())
-			}
-
-			return nil
+			return index.WriteEntries(os.Stdout, index.NewIndex(ents))
 		},
 	}
 )

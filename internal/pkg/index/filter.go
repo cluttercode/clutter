@@ -7,41 +7,27 @@ import (
 	"strings"
 )
 
-func SliceSource(index *Index) func() (*Entry, error) {
-	rest := index.entries
-
-	return func() (curr *Entry, _ error) {
-		if len(rest) > 0 {
-			curr, rest = rest[0], rest[1:]
-		}
-		return
-	}
-}
-
-func FileSource(path string) (next func() (*Entry, error), done func(), err error) {
-	var f *os.File
+func ReadFile(path string) (*Index, error) {
+	var (
+		f   *os.File
+		err error
+	)
 
 	if path == "stdin" || path == "-" {
 		f = os.Stdin
 	} else if f, err = os.Open(path); err != nil {
-		return nil, nil, err // don't wrap here - checking for IsNotExist in caller.
+		return nil, err // don't wrap here - checking for IsNotExist in caller.
 	}
-
-	done = func() { f.Close() }
 
 	scanner := bufio.NewScanner(f)
 
-	i := 1
 	first := true
+	ents := make([]*Entry, 0, 10)
 
-	next = func() (*Entry, error) {
-		if !scanner.Scan() {
-			return nil, nil
-		}
-
+	for i := 1; scanner.Scan(); i++ {
 		text := strings.TrimSpace(scanner.Text())
 		if text == "" {
-			return next()
+			continue
 		}
 
 		if first {
@@ -51,7 +37,7 @@ func FileSource(path string) (next func() (*Entry, error), done func(), err erro
 
 			first = false
 
-			return next()
+			continue
 		}
 
 		ent := &Entry{}
@@ -59,36 +45,27 @@ func FileSource(path string) (next func() (*Entry, error), done func(), err erro
 			return nil, fmt.Errorf("index line %d: %w", i, err)
 		}
 
-		return ent, nil
+		ents = append(ents, ent)
 	}
 
-	return
+	return NewIndex(ents), nil
 }
 
 var ErrStop = fmt.Errorf("stop")
 
-func ForEach(next func() (*Entry, error), fn func(*Entry) error) error {
-	_, err := Filter(next, func(ent *Entry) (bool, error) { return false, fn(ent) })
+func ForEach(idx *Index, fn func(*Entry) error) error {
+	_, err := Filter(idx, func(ent *Entry) (bool, error) { return false, fn(ent) })
 	return err
 }
 
-func Filter(next func() (*Entry, error), filter func(*Entry) (bool, error)) (*Index, error) {
+func Filter(idx *Index, filter func(*Entry) (bool, error)) (*Index, error) {
 	if filter == nil {
-		filter = func(*Entry) (bool, error) { return true, nil }
+		return idx, nil
 	}
 
 	var results []*Entry
 
-	for {
-		ent, err := next()
-		if err != nil {
-			return nil, fmt.Errorf("source: %w", err)
-		}
-
-		if ent == nil {
-			break
-		}
-
+	for _, ent := range idx.entries {
 		incl, err := filter(ent)
 
 		if err == ErrStop {

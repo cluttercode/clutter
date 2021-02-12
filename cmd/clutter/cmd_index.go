@@ -77,12 +77,12 @@ var (
 				meta := fmt.Sprintf("%s %s", version, commit)
 
 				if indexOpts.print {
-					_ = index.Write("stdout", idx, meta)
+					_ = index.WriteFile("stdout", idx, meta)
 				}
 
 				z.Infow("writing index", "n", idx.Size())
 
-				if err := index.Write(opts.indexPath, idx, meta); err != nil {
+				if err := index.WriteFile(opts.indexPath, idx, meta); err != nil {
 					return fmt.Errorf("index write: %w", err)
 				}
 

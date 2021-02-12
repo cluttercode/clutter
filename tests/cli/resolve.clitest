@@ -3,22 +3,22 @@ meow foo/bar:5.5-15
 $ ${CLUTTER} -i index.1 r --loc foo/bar:1.1
 meow foo/bar:1.1-10 scope=cat
 $ ${CLUTTER} -i index.1 r --loc foo/bar:2.2
-woof foo/bar:2.2-10 see
 woof bar/baz/boo:11.2-20 see=somewhere
+woof foo/bar:2.2-10 see
 $ ${CLUTTER} -i index.1 r --loc bla:1; echo $?
 
 error: loc: invalid
 1
 $ ${CLUTTER} -i index.1 r --loc nowhere:1.1
-woof foo/bar:2.2-10 see
 woof bar/baz/boo:11.2-20 see=somewhere
+woof foo/bar:2.2-10 see
 $ ${CLUTTER} -i index.1 r --loc nowhere:1.1 -p 2> /dev/null; echo $?
-woof foo/bar:2.2-10 see
 woof bar/baz/boo:11.2-20 see=somewhere
+woof foo/bar:2.2-10 see
 0
 $ ${CLUTTER} -i index.1 r --loc nowhere:1.1 -n 2> /dev/null; echo $?
-woof foo/bar:2.2-10 see
 woof bar/baz/boo:11.2-20 see=somewhere
+woof foo/bar:2.2-10 see
 0
 $ ${CLUTTER} -i index.1 r --loc a:1.1
 z a:1.1-10

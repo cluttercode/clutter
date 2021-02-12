@@ -21,19 +21,17 @@ var (
 				return fmt.Errorf("linter: %w", err)
 			}
 
-			src, done, err := readIndex(c)
+			idx, err := readIndex(c)
 			if err != nil {
 				return fmt.Errorf("read index: %w", err)
 			}
-
-			defer done()
 
 			ctx := context.Background()
 
 			pass := true
 
 			if err := index.ForEach(
-				src,
+				idx,
 				func(ent *index.Entry) error {
 					z.Debugw("checking", "loc", ent.Loc)
 

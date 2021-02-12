@@ -2,8 +2,8 @@ $ ${CLUTTER} -i empty s
 $ ${CLUTTER} -i index.1 s
 meow foo/bar:1.1-10 scope=cat
 meow foo/bar:5.5-15
-woof foo/bar:2.2-10 see
 woof bar/baz/boo:11.2-20 see=somewhere
+woof foo/bar:2.2-10 see
 z a:1.1-10
 z b:2.2-10
 z c:3.3-10
