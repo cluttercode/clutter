@@ -13,7 +13,7 @@ $ ${CLUTTER} -i "" s; echo $?
 $ ${CLUTTER} -c config.1.yaml -i "" s; echo $?
 0
 $ ${CLUTTER} --nc s; echo $?
-WARN   file does not exist     {"path": ".clutter/index"}
 0
 $ ${CLUTTER} -c config.1.yaml --nc s; echo $?
+WARN   file does not exist     {"path": ".clutter/index"}
 0

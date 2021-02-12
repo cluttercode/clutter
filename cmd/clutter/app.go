@@ -97,12 +97,15 @@ var (
 
 func indexPaths(c *cli.Context) []string {
 	if c.IsSet(indexFlag.Name) {
+		// specifically use name specified.
 		return []string{opts.indexPath}
 	}
 
-	if cfg.IgnoreIndex || opts.indexPath == "" {
-		return []string{""}
+	if cfg.UseIndex {
+		// fallback on no index.
+		return []string{opts.indexPath, ""}
 	}
 
-	return []string{opts.indexPath, ""}
+	// no index
+	return []string{""}
 }

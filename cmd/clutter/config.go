@@ -21,9 +21,9 @@ const (
 func configPath(p string) string { return filepath.Join(defaultClutterDir, p) }
 
 type config struct {
-	IgnoreIndex bool           `json:"ignore-index"`
-	Scanner     scanner.Config `json:"scanner"`
-	Linter      linter.Config  `json:"linter"`
+	UseIndex bool           `json:"use-index"`
+	Scanner  scanner.Config `json:"scanner"`
+	Linter   linter.Config  `json:"linter"`
 }
 
 var (
@@ -49,7 +49,7 @@ func loadConfig(path string) error {
 		return fmt.Errorf("read file: %w", err)
 	}
 
-	if err := yaml.Unmarshal(bs, &cfg); err != nil {
+	if err := yaml.UnmarshalStrict(bs, &cfg, yaml.DisallowUnknownFields); err != nil {
 		return fmt.Errorf("invalid config file: %w", err)
 	}
 
