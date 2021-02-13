@@ -50,4 +50,19 @@ $ ${CLUTTER} -i index.1 r --loc c:3.3 -n -p; echo $?
 
 error: --prev and --next are mutually exclusive
 1
-$
+$ ${CLUTTER} r --loc test.txt:1.1
+
+error: no tag found at loc
+$ cat test.txt | tail -n +2 | ${CLUTTER} r --loc test.txt:1.1 --loc-from-stdin
+test test.txt:1.1-10
+$ # the following should not read from the index since the tag is local.
+$ cat test.txt | tail -n +2 | ${CLUTTER} -i nosuchthing r --loc test.txt:2.1 --loc-from-stdin
+local-test test.txt:2.1-17 scope=test.txt
+$ ${CLUTTER} r --loc test.txt:2.1; echo $?
+
+error: no tag found at loc
+1
+$ printf "[%s .test %s]" "#" "#" | ${CLUTTER} -i nosuchthing r --loc test.txt:1.1 --loc-from-stdin
+test test.txt:1.1-11 scope=test.txt
+$ printf "[%s .test %s] [# %stop #] [%s .test %s]" "#" "#" "%s" "#" "#" | ${CLUTTER} -i nosuchthing r --loc test.txt:1.1 --loc-from-stdin
+test test.txt:1.1-11 scope=test.txt

@@ -27,7 +27,7 @@ func NewFilter(z *zap.SugaredLogger, cfg Config) (func(string, os.FileInfo) (boo
 	exclude := gitignore.NewMatcher(ignores).Match
 
 	return func(path string, fi os.FileInfo) (bool, error) {
-		isDir := fi.IsDir()
+		isDir := fi != nil && fi.IsDir()
 
 		split := strings.Split(path, string(filepath.Separator))
 

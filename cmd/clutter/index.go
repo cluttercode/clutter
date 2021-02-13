@@ -12,6 +12,35 @@ import (
 	"github.com/cluttercode/clutter/internal/pkg/index"
 )
 
+func hasIndex(c *cli.Context) bool {
+	if c.IsSet(indexFlag.Name) {
+		return opts.indexPath != ""
+	}
+
+	if cfg.UseIndex && opts.indexPath != "" {
+		_, err := os.Stat(opts.indexPath)
+
+		return err == nil
+	}
+
+	return false
+}
+
+func indexPaths(c *cli.Context) []string {
+	if c.IsSet(indexFlag.Name) {
+		// specifically use name specified.
+		return []string{opts.indexPath}
+	}
+
+	if cfg.UseIndex {
+		// fallback on no index.
+		return []string{opts.indexPath, ""}
+	}
+
+	// no index
+	return []string{""}
+}
+
 func readIndex(c *cli.Context) (*index.Index, error) {
 	paths := indexPaths(c)
 
@@ -34,7 +63,7 @@ func readIndex(c *cli.Context) (*index.Index, error) {
 			return nil, fmt.Errorf("%s: %w", path, err)
 		}
 
-		z.Info("index read")
+		z.Infow("index read", "n", idx.Size())
 
 		return idx, nil
 	}
@@ -59,6 +88,31 @@ func readAdHocIndex() (*index.Index, error) {
 	elems, err := scan(".", nil)
 	if err != nil {
 		return nil, fmt.Errorf("scan: %w", err)
+	}
+
+	ents, err := parser.ParseElements(elems)
+	if err != nil {
+		return nil, fmt.Errorf("parser: %w", err)
+	}
+
+	return index.NewIndex(ents), nil
+}
+
+func indexFile(inputPath, actualPath string) (*index.Index, error) {
+	elems := make([]*scanner.RawElement, 0, 10)
+
+	if err := scanner.ScanFile(
+		nil,
+		z.Named("scan1"),
+		cfg.Scanner.Bracket,
+		inputPath,
+		func(elem *scanner.RawElement) error {
+			elem.Loc.Path = actualPath
+			elems = append(elems, elem)
+			return nil
+		},
+	); err != nil {
+		return nil, err // do not wrap
 	}
 
 	ents, err := parser.ParseElements(elems)

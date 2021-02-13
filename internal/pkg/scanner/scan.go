@@ -2,8 +2,10 @@ package scanner
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"io"
+	"os"
 	"strings"
 
 	"github.com/spf13/afero"
@@ -14,7 +16,7 @@ import (
 func ScanReader(
 	z *zap.SugaredLogger,
 	cfg BracketConfig,
-	r io.ReadSeeker,
+	r io.Reader,
 	f func(*RawElement) error, // will not include path. path is filled in [# .fill-path #].
 ) error {
 	re, err := cfg.Regexp()
@@ -34,14 +36,16 @@ func ScanReader(
 		return nil
 	}
 
-	if ofs, err := r.Seek(0, 0); err != nil || ofs != 0 {
-		return fmt.Errorf("seek: ofs=%d, err=%w", ofs, err)
-	}
+	r = io.MultiReader(bytes.NewReader(buf[:n]), r)
 
 	scanner := bufio.NewScanner(r)
 
+	stopped := false
+
 	for i := 0; scanner.Scan(); i++ {
 		line := scanner.Text()
+
+		z.Debugw("read", "line", line)
 
 		ms := re.FindAllStringIndex(line, -1)
 
@@ -52,6 +56,31 @@ func ScanReader(
 			text = strings.TrimPrefix(text, cfg.Left)
 			text = strings.TrimSuffix(text, cfg.Right)
 			text = strings.TrimSpace(text)
+
+			if strings.HasPrefix(text, "%") {
+				switch text[1:] {
+				case "stop":
+					if stopped {
+						return fmt.Errorf("already stopped")
+					}
+
+					stopped = true
+				case "cont":
+					if !stopped {
+						return fmt.Errorf("not stopped")
+					}
+
+					stopped = false
+				default:
+					return fmt.Errorf("unknown pragma: %s", text)
+				}
+
+				continue
+			}
+
+			if stopped {
+				continue
+			}
 
 			if err := f(&RawElement{
 				Text: text,
@@ -87,17 +116,23 @@ func ScanFile(
 		fs = afero.NewOsFs()
 	}
 
-	fp, err := fs.Open(path)
-	if err != nil {
-		return fmt.Errorf("open %q: %w", path, err)
-	}
+	var r io.Reader = os.Stdin
 
-	defer fp.Close()
+	if !(path == "" || path == "-" || path == "stdin") {
+		fp, err := fs.Open(path)
+		if err != nil {
+			return err // do not wrap
+		}
+
+		defer fp.Close()
+
+		r = fp
+	}
 
 	return ScanReader(
 		z,
 		cfg,
-		fp,
+		r,
 		func(e *RawElement) error {
 			e.Loc.Path = path // [# .fill-path #]
 			return f(e)

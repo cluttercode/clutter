@@ -16,6 +16,7 @@ var (
 	resolveOpts = struct {
 		content, loc       string
 		prev, next, cyclic bool
+		locFromStdin       bool
 	}{}
 
 	resolveCommand = cli.Command{
@@ -48,6 +49,11 @@ var (
 				Required:    true,
 				Usage:       "tag position as path:line.col",
 			},
+			&cli.BoolFlag{
+				Name:        "loc-from-stdin",
+				Destination: &resolveOpts.locFromStdin,
+				Usage:       "read file at loc from stdin",
+			},
 		},
 		Action: func(c *cli.Context) error {
 			if resolveOpts.next && resolveOpts.prev {
@@ -59,26 +65,94 @@ var (
 				return fmt.Errorf("loc: %w", err)
 			}
 
-			idx, err := readIndex(c)
-			if err != nil {
-				return fmt.Errorf("read index: %w", err)
-			}
-
-			var what *index.Entry
-
-			idx, err = index.Filter(
-				idx,
-				func(ent *index.Entry) (bool, error) {
-					if ent.Loc.Path == loc.Path && ent.Loc.Line == loc.Line && loc.StartColumn >= ent.Loc.StartColumn && loc.EndColumn <= ent.Loc.EndColumn {
-						what = ent
-					}
-
-					return true, nil
-				},
+			var (
+				skipFullIdx bool         // should scan full tree
+				idxAtLoc    *index.Index // index built for loc only
+				what        *index.Entry // located tag
 			)
 
+			filter, err := scanner.NewFilter(z, cfg.Scanner)
 			if err != nil {
-				return fmt.Errorf("index: %w", err)
+				return fmt.Errorf("new filter: %w", err)
+			}
+
+			if ok, _ := filter(loc.Path, nil); ok && (resolveOpts.locFromStdin || !hasIndex(c)) {
+				locPath := loc.Path
+
+				if resolveOpts.locFromStdin {
+					locPath = ""
+				}
+
+				z.Debugw("preindexing", "path", locPath)
+
+				idxAtLoc, err = indexFile(locPath, loc.Path)
+				if err != nil {
+					return fmt.Errorf("index loc: %w", err)
+				}
+
+				z.Debugw("preindex", "idx", idxAtLoc.Slice())
+
+				if idxAtLoc != nil {
+					founds, _ := index.Filter(idxAtLoc, func(ent *index.Entry) (bool, error) {
+						return ent.Loc.Contains(*loc), nil
+					})
+
+					if founds.Size() == 0 {
+						return fmt.Errorf("no tag found at loc")
+					}
+
+					if founds.Size() > 1 {
+						z.Panicw("found more than single tag at loc", "found", founds)
+					}
+
+					what = founds.Slice()[0]
+
+					if what.Attrs["scope"] == loc.Path {
+						// optimization: in this case we can skip the full index since we
+						// got all data that we need in the file at loc.
+						skipFullIdx = true
+						z.Debug("loc with matching file scope found at loc, skipping rest of index")
+					} else {
+						z.Debugw("full index building is required", "tag", what)
+					}
+				}
+			}
+
+			idx := idxAtLoc
+
+			if !skipFullIdx {
+				idx1, err := readIndex(c)
+				if err != nil {
+					return fmt.Errorf("read index: %w", err)
+				}
+
+				if idxAtLoc == nil {
+					idx = idx1
+				} else { // already got data regarding file at loc.
+
+					idx1, _ = index.Filter(idx1, func(ent *index.Entry) (bool, error) {
+						// eliminate entries from loc, as we already have them in idxAtLoc.
+						return ent.Loc.Path != loc.Path, nil
+					})
+
+					idx.Add(idx1.Slice())
+				}
+			}
+
+			if what == nil {
+				_, _ = index.Filter(idx, func(ent *index.Entry) (bool, error) {
+					z.Debugw("considering", "loc", ent.Loc)
+
+					if ent.Loc.Contains(*loc) {
+						z.Debugw("located", "loc", ent.Loc)
+
+						what = ent
+
+						return false, index.ErrStop
+					}
+
+					return false, nil
+				})
 			}
 
 			if what == nil {

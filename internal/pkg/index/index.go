@@ -39,6 +39,8 @@ func (i *Index) Add(ents []*Entry) *Index {
 
 func (i *Index) Size() int { return len(i.entries) }
 
+func (i *Index) Slice() []*Entry { return i.entries[:] }
+
 func WriteEntries(w io.Writer, index *Index) error {
 	for _, i := range index.entries {
 		text := i.marshal() + "\n"

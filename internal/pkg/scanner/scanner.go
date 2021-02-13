@@ -3,7 +3,6 @@ package scanner
 import (
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/spf13/afero"
 	"go.uber.org/zap"
@@ -37,34 +36,7 @@ func NewScanner(fs afero.Fs, z *zap.SugaredLogger, cfg Config) (func(root string
 				return err
 			}
 
-			stopped := false
-
 			if err := ScanFile(fs, z, cfg.Bracket, path, func(elem *RawElement) error {
-				if strings.HasPrefix(elem.Text, "%") {
-					switch elem.Text[1:] {
-					case "stop":
-						if stopped {
-							return fmt.Errorf("already stopped")
-						}
-
-						stopped = true
-					case "cont":
-						if !stopped {
-							return fmt.Errorf("not stopped")
-						}
-
-						stopped = false
-					default:
-						return fmt.Errorf("unknown pragma: %s", elem.Text)
-					}
-
-					return nil
-				}
-
-				if stopped {
-					return nil
-				}
-
 				if err := f(elem); err != nil {
 					return err
 				}

@@ -13,7 +13,7 @@ func ReadFile(path string) (*Index, error) {
 		err error
 	)
 
-	if path == "stdin" || path == "-" {
+	if path == "stdin" || path == "-" || path == "" {
 		f = os.Stdin
 	} else if f, err = os.Open(path); err != nil {
 		return nil, err // don't wrap here - checking for IsNotExist in caller.
