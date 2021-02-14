@@ -77,7 +77,7 @@ Each tag has a name and key-value attributes. Each attribute key must be unique.
 
 ### Special Attributes
 
-- `scope` denotes where to look for matching tags. This can be either a path to a specific file, or to a directory and end with a `/`.  
+- `scope` denotes where to look for matching tags. This can be either a path to a specific file, or to a directory and end with a `/`.
 
   **NOTE**: this is experimental and might change in the future.
 
@@ -111,19 +111,17 @@ These tags are written as a normal tag to the index, with an added attribute `se
 
 ## Index
 
+To generate an index, use:
+
 ```
 $ clutter index
 ```
 
-Creates an index, which by default written to `.clutter/index`. This might be useful for very large repositories to speed up other commands. The index will be useful in the future for searching a repository for tags without the need to clone it first. 
+This creates an index, which by default written to `.clutter/index`. This might be useful for very large repositories to speed up other commands. The index will be useful in the future for searching a repository for tags without the need to clone it first. 
 
-The index can be ignored by specifying `-i ""` to the cli, for example:
+By default an index is not used. An index can be used by either specifying its filenames using the `-i` option, or a configuration field.
 
-```
-$ clutter -i "" search cat
-```
-
-## Structure
+### Structure
 
 Each index entry is of the form:
 
@@ -136,6 +134,36 @@ name path:line.startcol-endcol attrs
 The index is treated as a `csv` file with a single space as a field delimiter. If any other spaces present in any other field, expect it to be properly quoted by clutter.
 
 All other commands try to read from the index first, and if it does not exist - scan the tree instead.
+
+## Search
+
+Clutter provides a CLI command to perform searchs on tags, for example:
+
+```
+$ clutter search -g \* loc=foo/\* lang=go
+```
+
+will search for all tags under the path `foo/` that has an attribute `lang` set to `go`.
+
+`-g` denotes use of glob matching for all fields. `-e` denotes use of regex. If neither is specified, exact matching is used.
+
+## Resolve
+
+The `resolve` CLI command is built for used by IDEs. For example, it is used by [vim-clutter]() and [vscode-clutter](https://github.com/cluttercode/vim-clutter)).
+
+For example:
+
+```
+$ clutter resolve --loc README.md:2.5 --loc-from-stdin --next --cyclic
+```
+
+will find the next use of the tag located at `README.md:2.5`. If this is the last occurance, the first occurance is returned. `README.md` content is read from stdin, which is useful if that file is not saved yet. If the tag at loc is a search tag, it is treated the same way `search` does, meaning multiple results, if any, will always be returned.
+
+A useful optimization that is implemented here by `resolve` is that if the tag pointed to by `--loc` is local (`.some-tag` or `sometag scope=README.md`), the tree is not scanned as the data in the file at loc is sufficient.
+
+## Lint
+
+**TODO**
 
 ## Configuration
 
@@ -150,12 +178,10 @@ scanner:
     right: "#]"
 ```
 
-**TODO**: lint.
-
 ## Integrations
 
 - [Vim Plugin](https://github.com/cluttercode/vim-clutter)
-
+- [VSCode Plugin](https://github.com/cluttercode/vscode-clutter)
 - [Sphinx Extension](https://github.com/cluttercode/sphinx-clutter)
 
 ## Installation
@@ -178,7 +204,7 @@ go install github.com/cluttercode/clutter/cmd/clutter
 
 ### From source
 
-For hardcore people.
+Hardcore!
 
 ```shell
 git clone github.com/cluttercode/clutter
@@ -188,14 +214,11 @@ make install
 
 ### Prebuilt binaries
 
-For old timers.
-
 See [releases](https://github.com/cluttercode/clutter/releases).
 
 
 ## TODO
 
-- [ ] Docs: resolve, search.
 - [ ] More tests.
 - [ ] Cross repo.
 - [ ] Only account for tags in comments.
