@@ -149,7 +149,7 @@ will search for all tags under the path `foo/` that has an attribute `lang` set 
 
 ## Resolve
 
-The `resolve` CLI command is built for used by IDEs. For example, it is used by [vim-clutter]() and [vscode-clutter](https://github.com/cluttercode/vim-clutter)).
+The `resolve` CLI command is built for used by IDEs. For example, it is used by [vim-clutter]() and [vscode-clutter](https://github.com/cluttercode/vim-clutter).
 
 For example:
 
