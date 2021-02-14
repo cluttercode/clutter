@@ -45,8 +45,6 @@ func ScanReader(
 	for i := 0; scanner.Scan(); i++ {
 		line := scanner.Text()
 
-		z.Debugw("read", "line", line)
-
 		ms := re.FindAllStringIndex(line, -1)
 
 		for _, m := range ms {

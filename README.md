@@ -109,6 +109,18 @@ These tags are written as a normal tag to the index, with an added attribute `se
 * somewhere:1.1-19 lang=hs search=glob
 ```
 
+### Pragma Tags
+
+There are only two pragma tags implemented: `%stop` and `%cont`. Example:
+
+```
+[# to_be #]
+[# %stop #]
+[# or_not_to_be #]
+[# %cont #]
+[# that_is_the_question #]
+```
+
 ## Index
 
 To generate an index, use:
@@ -177,6 +189,12 @@ scanner:
     left: "[#"
     right: "#]"
 ```
+
+## Caveats
+
+- Only textual files are scanned.
+- Tags are scanned whether they are in a comment or not.
+- Links are ignored.
 
 ## Integrations
 

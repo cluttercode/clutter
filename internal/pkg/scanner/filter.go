@@ -27,14 +27,29 @@ func NewFilter(z *zap.SugaredLogger, cfg Config) (func(string, os.FileInfo) (boo
 	exclude := gitignore.NewMatcher(ignores).Match
 
 	return func(path string, fi os.FileInfo) (bool, error) {
-		isDir := fi != nil && fi.IsDir()
+		var (
+			isDir, isLink bool
+			mode          os.FileMode
+		)
+
+		if fi != nil {
+			mode = fi.Mode()
+			isDir = fi.IsDir()
+			isLink = mode&os.ModeSymlink != 0
+		}
 
 		split := strings.Split(path, string(filepath.Separator))
 
-		z := z.With("path", split, "is_dir", isDir)
+		z := z.With("path", split, "is_link", isLink, "is_dir", isDir, "mode", mode)
+
+		if isLink {
+			z.Debug("links are excluded")
+
+			return false, nil
+		}
 
 		if exclude(split, isDir) {
-			z.Debug("exclude")
+			z.Debug("exclude dir")
 
 			if isDir {
 				return false, filepath.SkipDir

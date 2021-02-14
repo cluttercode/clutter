@@ -56,11 +56,11 @@ func readIndex(c *cli.Context) (*index.Index, error) {
 				continue
 			}
 
-			if path == "" {
-				path = "stdin"
+			if path != "" {
+				path = path + ": "
 			}
 
-			return nil, fmt.Errorf("%s: %w", path, err)
+			return nil, fmt.Errorf("%s%w", path, err)
 		}
 
 		z.Infow("index read", "n", idx.Size())
