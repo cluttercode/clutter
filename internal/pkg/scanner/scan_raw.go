@@ -13,7 +13,7 @@ func ScanRawReader(
 	z *zap.SugaredLogger,
 	cfg BracketConfig,
 	r io.Reader,
-	f func(*RawElement) error, // will not include path. path is filled in [# .fill-path #].
+	f func(*RawElement) error, // will not include path. path is filled in [# ./fill-path #].
 ) error {
 	re, err := cfg.Regexp()
 	if err != nil {
@@ -24,6 +24,7 @@ func ScanRawReader(
 
 	stopped := false
 
+S:
 	for i := 0; scanner.Scan(); i++ {
 		line := scanner.Text()
 
@@ -39,6 +40,10 @@ func ScanRawReader(
 
 			if strings.HasPrefix(text, "%") {
 				switch text[1:] {
+				case "stop!":
+					// hard stop will stop scanning the rest of the file.
+					break S
+
 				case "stop":
 					if stopped {
 						return fmt.Errorf("already stopped")

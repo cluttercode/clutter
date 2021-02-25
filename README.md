@@ -1,4 +1,4 @@
-<!-- [# %stop #] -->
+<!-- [# %stop! #] -->
 
 # [# Clutter #]
 
@@ -111,7 +111,7 @@ These tags are written as a normal tag to the index, with an added attribute `se
 
 ### Pragma Tags
 
-There are only two pragma tags implemented: `%stop` and `%cont`. Example:
+There are only three pragma tags implemented: `%stop`, '%stop!' and `%cont`. Example:
 
 ```
 [# to_be #]
@@ -120,6 +120,9 @@ There are only two pragma tags implemented: `%stop` and `%cont`. Example:
 [# %cont #]
 [# that_is_the_question #]
 ```
+
+`%stop!` will stop parsing the file entirely, ignoring further pragmas as well.
+
 
 ## Index
 
