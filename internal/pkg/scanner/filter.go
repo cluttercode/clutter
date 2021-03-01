@@ -5,8 +5,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/go-git/go-git/plumbing/format/gitignore"
 	"go.uber.org/zap"
+
+	"github.com/cluttercode/clutter/pkg/gitignore"
 )
 
 var defaultIgnores = []string{
