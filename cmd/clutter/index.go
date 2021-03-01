@@ -80,7 +80,7 @@ func readSpecificIndex(filename string) (*index.Index, error) {
 }
 
 func readAdHocIndex() (*index.Index, error) {
-	scan, err := scanner.NewScanner(nil, z.Named("scanner"), cfg.Scanner)
+	scan, err := scanner.NewScanner(z.Named("scanner"), cfg.Scanner)
 	if err != nil {
 		return nil, fmt.Errorf("new scanner: %w", err)
 	}
@@ -102,7 +102,6 @@ func indexFile(inputPath, actualPath string) (*index.Index, error) {
 	elems := make([]*scanner.RawElement, 0, 10)
 
 	if err := scanner.ScanFile(
-		nil,
 		z.Named("scan1"),
 		cfg.Scanner.Bracket,
 		inputPath,

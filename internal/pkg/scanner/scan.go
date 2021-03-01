@@ -8,25 +8,19 @@ import (
 
 	"golang.org/x/tools/godoc/util"
 
-	"github.com/spf13/afero"
 	"go.uber.org/zap"
 )
 
 func ScanFile(
-	fs afero.Fs,
 	z *zap.SugaredLogger,
 	cfg BracketConfig,
 	path string,
 	f func(*RawElement) error,
 ) error {
-	if fs == nil {
-		fs = afero.NewOsFs()
-	}
-
 	var r io.Reader = os.Stdin
 
 	if !(path == "" || path == "-" || path == "stdin") {
-		fp, err := fs.Open(path)
+		fp, err := os.Open(path)
 		if err != nil {
 			return err // do not wrap
 		}
