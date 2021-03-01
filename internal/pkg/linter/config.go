@@ -1,12 +1,12 @@
 package linter
 
 type Rule struct {
-	Name       string   `json:"name"`
-	PathGlob   string   `json:"path-glob"`
-	PathRegexp string   `json:"path-re"`
-	Shell      []string `json:"shell"`
+	Name       string   `yaml:"name"`
+	PathGlob   string   `yaml:"path-glob"`
+	PathRegexp string   `yaml:"path-re"`
+	Shell      []string `yaml:"shell"`
 }
 
 type Config struct {
-	Rules []Rule `json:"rules"`
+	Rules []Rule `yaml:"rules"`
 }

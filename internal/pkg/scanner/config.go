@@ -6,8 +6,8 @@ import (
 )
 
 type BracketConfig struct {
-	Left  string `json:"left"`
-	Right string `json:"right"`
+	Left  string `yaml:"left"`
+	Right string `yaml:"right"`
 }
 
 func (c *BracketConfig) OverrideWith(o BracketConfig) {
@@ -27,6 +27,6 @@ func (c *BracketConfig) Regexp() (*regexp.Regexp, error) {
 }
 
 type Config struct {
-	Bracket BracketConfig `json:"bracket"`
-	Ignore  []string      `json:"ignore"`
+	Bracket BracketConfig `yaml:"bracket"`
+	Ignore  []string      `yaml:"ignore"`
 }

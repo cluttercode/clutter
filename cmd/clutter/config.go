@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/ghodss/yaml"
+	"gopkg.in/yaml.v2"
 
 	"github.com/cluttercode/clutter/internal/pkg/linter"
 	"github.com/cluttercode/clutter/internal/pkg/scanner"
@@ -21,9 +21,9 @@ const (
 func configPath(p string) string { return filepath.Join(defaultClutterDir, p) }
 
 type config struct {
-	UseIndex bool           `json:"use-index"`
-	Scanner  scanner.Config `json:"scanner"`
-	Linter   linter.Config  `json:"linter"`
+	UseIndex bool           `yaml:"use-index"`
+	Scanner  scanner.Config `yaml:"scanner"`
+	Linter   linter.Config  `yaml:"linter"`
 }
 
 var (
@@ -49,7 +49,7 @@ func loadConfig(path string) error {
 		return fmt.Errorf("read file: %w", err)
 	}
 
-	if err := yaml.UnmarshalStrict(bs, &cfg, yaml.DisallowUnknownFields); err != nil {
+	if err := yaml.UnmarshalStrict(bs, &cfg); err != nil {
 		return fmt.Errorf("invalid config file: %w", err)
 	}
 
