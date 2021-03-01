@@ -2,9 +2,11 @@ package strmatcher
 
 import (
 	"fmt"
+	"path/filepath"
 	"regexp"
+	"strings"
 
-	"github.com/gobwas/glob"
+	"github.com/cluttercode/clutter/pkg/gitignore"
 )
 
 type Matcher func(string) bool
@@ -62,12 +64,15 @@ func CompileExactMatcher(opt string) (Matcher, error) {
 }
 
 func CompileGlobMatcher(pattern string) (Matcher, error) {
-	g, err := glob.Compile(pattern)
-	if err != nil {
-		return nil, err
-	}
+	p := gitignore.ParsePattern(pattern, nil)
 
-	return g.Match, nil
+	return func(path string) bool {
+		parts := strings.Split(path, string(filepath.Separator))
+		isDir := len(path) > 0 && path[len(path)-1] == filepath.Separator
+
+		// Don't care about inclusion/exclusion.
+		return p.Match(parts, isDir) != gitignore.NoMatch
+	}, nil
 }
 
 func CompileRegexpMatcher(pattern string) (Matcher, error) {

@@ -8,10 +8,10 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/gobwas/glob"
 	"go.uber.org/zap"
 
 	"github.com/cluttercode/clutter/internal/pkg/index"
+	"github.com/cluttercode/clutter/pkg/strmatcher"
 )
 
 type internalRule struct {
@@ -41,13 +41,13 @@ func (ir *internalRule) init(l *Linter, r Rule) error {
 	ir.checkPath = func(string) bool { return true }
 
 	if g := r.PathGlob; g != "" {
-		m, err := glob.Compile(g)
+		m, err := strmatcher.CompileGlobMatcher(g)
 		if err != nil {
 			return fmt.Errorf("path-glob: %w", err)
 		}
 
 		ir.checkPath = func(path string) bool {
-			ok := m.Match(path)
+			ok := m(path)
 
 			l.z.Debugw("glob match", "path", path, "ok", ok, "glob", g)
 
