@@ -8,7 +8,6 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/Knetic/govaluate"
 	"github.com/gobwas/glob"
 	"go.uber.org/zap"
 
@@ -35,12 +34,8 @@ func (ir *internalRule) init(l *Linter, r Rule) error {
 		return fmt.Errorf("path-pattern and path-re are mutuallye exclusive")
 	}
 
-	if len(r.Shell) != 0 && r.Expr != "" {
-		return fmt.Errorf("shell and expr are mutually exclusive")
-	}
-
-	if len(r.Shell) == 0 && r.Expr == "" {
-		return fmt.Errorf("either shell or expr are required")
+	if len(r.Shell) == 0 {
+		return fmt.Errorf("shell is expected")
 	}
 
 	ir.checkPath = func(string) bool { return true }
@@ -72,59 +67,6 @@ func (ir *internalRule) init(l *Linter, r Rule) error {
 			l.z.Debugw("re match", "path", path, "ok", ok, "re", re)
 
 			return ok
-		}
-	}
-
-	if expr := r.Expr; expr != "" {
-		funcs := map[string]govaluate.ExpressionFunction{
-			"re_match": func(vs ...interface{}) (interface{}, error) {
-				if len(vs) != 2 {
-					return nil, fmt.Errorf("expecting two arguments")
-				}
-
-				p, ok := vs[0].(string)
-				if !ok {
-					return nil, fmt.Errorf("pattern argument must be a string")
-				}
-
-				s, ok := vs[1].(string)
-				if !ok {
-					return nil, fmt.Errorf("text argument must be a string")
-				}
-
-				return regexp.MatchString(p, s)
-			},
-			"glob_match": func(vs ...interface{}) (interface{}, error) {
-				if len(vs) != 2 {
-					return nil, fmt.Errorf("expecting two arguments")
-				}
-
-				p, ok := vs[0].(string)
-				if !ok {
-					return nil, fmt.Errorf("pattern argument must be a string")
-				}
-
-				s, ok := vs[1].(string)
-				if !ok {
-					return nil, fmt.Errorf("text argument must be a string")
-				}
-
-				g, err := glob.Compile(p)
-				if err != nil {
-					return nil, err
-				}
-
-				return g.Match(s), nil
-			},
-		}
-
-		evalexpr, err := govaluate.NewEvaluableExpressionWithFunctions(expr, funcs)
-		if err != nil {
-			return fmt.Errorf("expr: %w", err)
-		}
-
-		ir.eval = func(_ context.Context, ent *index.Entry) (bool, error) {
-			return l.eval(evalexpr, ent)
 		}
 	}
 
@@ -244,25 +186,4 @@ func (l *Linter) shell(ctx context.Context, cmdParts []string, ent *index.Entry)
 	l.z.Info("returned zero")
 
 	return true, nil
-}
-
-func (l *Linter) eval(eval *govaluate.EvaluableExpression, ent *index.Entry) (bool, error) {
-	l.z.Infow("checking expression")
-
-	res, err := eval.Evaluate(map[string]interface{}{"name": ent.Name, "path": ent.Loc.Path, "attrs": ent.Attrs.ToStruct()}) // [# govaluate-params #]
-	if err != nil {
-		l.z.Errorw("eval error", "err", err)
-		return false, err
-	}
-
-	l.z.Infow("returned", "res", res)
-
-	pass, ok := res.(bool)
-
-	if !ok {
-		l.z.Errorw("non-boolean result", "res", res)
-		return false, fmt.Errorf("expression result is not a boolean: %v", res)
-	}
-
-	return pass, nil
 }

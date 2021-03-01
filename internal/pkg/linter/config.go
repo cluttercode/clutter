@@ -5,7 +5,6 @@ type Rule struct {
 	PathGlob   string   `json:"path-glob"`
 	PathRegexp string   `json:"path-re"`
 	Shell      []string `json:"shell"`
-	Expr       string   `json:"expr"`
 }
 
 type Config struct {
