@@ -1,42 +1,22 @@
 package main
 
 import (
-	"fmt"
-	"time"
-
-	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
+	"github.com/cluttercode/clutter/pkg/zlog"
 )
 
-var z *zap.SugaredLogger = zap.NewNop().Sugar()
+var z *zlog.Logger = zlog.NewNopLogger()
 
 func initLogger(level string, color bool) error {
-	zcfg := zap.NewDevelopmentConfig()
+	b := zlog.NewDefaultBackend()
 
-	zcfg.DisableStacktrace = true
-
-	zcfg.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
-	if !color {
-		zcfg.EncoderConfig.EncodeLevel = zapcore.CapitalLevelEncoder
-	}
-
-	zcfg.EncoderConfig.EncodeTime = func(time.Time, zapcore.PrimitiveArrayEncoder) {}
-
-	if level != "debug" {
-		zcfg.EncoderConfig.EncodeDuration = nil
-		zcfg.EncoderConfig.EncodeCaller = nil
-	}
-
-	if err := zcfg.Level.UnmarshalText([]byte(level)); err != nil {
-		return fmt.Errorf(`invalid log level "%s": %w`, level, err)
-	}
-
-	zz, err := zcfg.Build(zap.AddCaller())
+	lvl, err := zlog.ParseLevelString(level)
 	if err != nil {
-		return fmt.Errorf("failed initializing log: %w", err)
+		return err
 	}
 
-	z = zz.Sugar()
+	b.Level = lvl
+
+	z = &zlog.Logger{Backend: b}
 
 	return nil
 }

@@ -5,10 +5,10 @@ import (
 	"os"
 	"path/filepath"
 
-	"go.uber.org/zap"
+	"github.com/cluttercode/clutter/pkg/zlog"
 )
 
-func NewScanner(z *zap.SugaredLogger, cfg Config) (func(root string, f func(*RawElement) error) ([]*RawElement, error), error) {
+func NewScanner(z *zlog.Logger, cfg Config) (func(root string, f func(*RawElement) error) ([]*RawElement, error), error) {
 	filter, err := NewFilter(z, cfg)
 	if err != nil {
 		return nil, err

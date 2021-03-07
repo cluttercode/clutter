@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"io"
 
-	"go.uber.org/zap"
+	"github.com/cluttercode/clutter/pkg/zlog"
 )
 
 func ScanSitterReader(
-	z *zap.SugaredLogger,
+	z *zlog.Logger,
 	cfg BracketConfig,
 	r io.Reader,
 	f func(*RawElement) error, // will not include path. path is filled in [# ./fill-path #].

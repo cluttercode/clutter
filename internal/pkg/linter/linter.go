@@ -9,9 +9,9 @@ import (
 	"strings"
 
 	"github.com/gobwas/glob"
-	"go.uber.org/zap"
 
 	"github.com/cluttercode/clutter/internal/pkg/index"
+	"github.com/cluttercode/clutter/pkg/zlog"
 )
 
 type internalRule struct {
@@ -20,7 +20,7 @@ type internalRule struct {
 }
 
 type Linter struct {
-	z *zap.SugaredLogger
+	z *zlog.Logger
 
 	config Config
 
@@ -79,7 +79,7 @@ func (ir *internalRule) init(l *Linter, r Rule) error {
 	return nil
 }
 
-func NewLinter(z *zap.SugaredLogger, cfg Config) (*Linter, error) {
+func NewLinter(z *zlog.Logger, cfg Config) (*Linter, error) {
 	l := &Linter{
 		z:      z,
 		config: cfg,

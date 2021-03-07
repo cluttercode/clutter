@@ -1,10 +1,10 @@
 $ ${CLUTTER} --nc -i nosuchfile s; echo $?
-WARN    file does not exist     {"path": "nosuchfile"}
+[warn] file does not exist {"path": "nosuchfile"}
 
 error: read index: no index file exist
 1
 $ ${CLUTTER} -c config.1.yaml --nc -i nosuchfile s; echo $?
-WARN    file does not exist     {"path": "nosuchfile"}
+[warn] file does not exist {"path": "nosuchfile"}
 
 error: read index: no index file exist
 1
@@ -15,5 +15,5 @@ $ ${CLUTTER} -c config.1.yaml -i "" s; echo $?
 $ ${CLUTTER} --nc s; echo $?
 0
 $ ${CLUTTER} -c config.1.yaml --nc s; echo $?
-WARN   file does not exist     {"path": ".clutter/index"}
+[warn] file does not exist {"path": ".clutter/index"}
 0

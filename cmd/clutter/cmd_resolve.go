@@ -5,11 +5,11 @@ import (
 	"os"
 
 	cli "github.com/urfave/cli/v2"
-	"go.uber.org/zap"
 
 	"github.com/cluttercode/clutter/internal/pkg/index"
 	"github.com/cluttercode/clutter/internal/pkg/resolver"
 	"github.com/cluttercode/clutter/internal/pkg/scanner"
+	"github.com/cluttercode/clutter/pkg/zlog"
 )
 
 var (
@@ -163,7 +163,7 @@ var (
 
 			z.Info("resolved tag")
 
-			r := func(z *zap.SugaredLogger, what *index.Entry, idx *index.Index, _ bool) ([]*index.Entry, error) {
+			r := func(z *zlog.Logger, what *index.Entry, idx *index.Index, _ bool) ([]*index.Entry, error) {
 				return resolver.ResolveList(z, what, idx)
 			}
 
