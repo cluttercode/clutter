@@ -5,14 +5,31 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"unicode/utf8"
 
-	"golang.org/x/tools/godoc/util"
-
-	"go.uber.org/zap"
+	"github.com/cluttercode/clutter/pkg/zlog"
 )
 
+func isText(s []byte) bool {
+	const max = 1024 // at least utf8.UTFMax
+	if len(s) > max {
+		s = s[0:max]
+	}
+	for i, c := range string(s) {
+		if i+utf8.UTFMax > len(s) {
+			// last char may be incomplete - ignore
+			break
+		}
+		if c == 0xFFFD || c < ' ' && c != '\n' && c != '\t' && c != '\f' {
+			// decoding error or control character - not a text file
+			return false
+		}
+	}
+	return true
+}
+
 func ScanFile(
-	z *zap.SugaredLogger,
+	z *zlog.Logger,
 	cfg BracketConfig,
 	path string,
 	f func(*RawElement) error,
@@ -37,7 +54,7 @@ func ScanFile(
 		return fmt.Errorf("read: %w", err)
 	}
 
-	if !util.IsText(buf[:n]) {
+	if !isText(buf[:n]) {
 		z.Debug("not a text file, ignoring")
 		return nil
 	}

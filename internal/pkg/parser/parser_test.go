@@ -1,9 +1,8 @@
 package parser
 
 import (
+	"reflect"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 
 	"github.com/cluttercode/clutter/internal/pkg/scanner"
 )
@@ -206,19 +205,31 @@ func TestParseElement(t *testing.T) {
 			)
 
 			if test.err {
-				assert.Error(t, err)
+				if err == nil {
+					t.Errorf("error expected, but got nil")
+				}
+
 				return
 			}
 
-			if !assert.NoError(t, err) {
+			if err != nil {
+				t.Errorf("got error: %v", err)
 				return
 			}
 
-			assert.Equal(t, test.name, ent.Name)
-			assert.EqualValues(t, test.attrs, ent.Attrs)
+			if test.name != ent.Name {
+				t.Errorf("name: %q != %q", test.name, ent.Name)
+			}
+
+			if reflect.DeepEqual(test.attrs, ent.Attrs) {
+				t.Errorf("attrs: %v != %v", test.attrs, ent.Attrs)
+			}
 
 			_, s := ent.IsSearch()
-			assert.Equal(t, test.search, s)
+
+			if test.search != s {
+				t.Errorf("search: %v != %v", test.search, s)
+			}
 		})
 	}
 }

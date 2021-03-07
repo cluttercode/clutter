@@ -3,26 +3,26 @@ package resolver
 import (
 	"fmt"
 
-	"go.uber.org/zap"
+	"github.com/cluttercode/clutter/pkg/zlog"
 
 	"github.com/cluttercode/clutter/internal/pkg/index"
 )
 
 type params struct{ next, prev, cycle, first, last bool }
 
-func ResolveList(z *zap.SugaredLogger, what *index.Entry, idx *index.Index) ([]*index.Entry, error) {
+func ResolveList(z *zlog.Logger, what *index.Entry, idx *index.Index) ([]*index.Entry, error) {
 	return resolve(z, what, idx, params{})
 }
 
-func ResolveNext(z *zap.SugaredLogger, what *index.Entry, idx *index.Index, cycle bool) ([]*index.Entry, error) {
+func ResolveNext(z *zlog.Logger, what *index.Entry, idx *index.Index, cycle bool) ([]*index.Entry, error) {
 	return resolve(z, what, idx, params{next: true, cycle: cycle})
 }
 
-func ResolvePrev(z *zap.SugaredLogger, what *index.Entry, idx *index.Index, cycle bool) ([]*index.Entry, error) {
+func ResolvePrev(z *zlog.Logger, what *index.Entry, idx *index.Index, cycle bool) ([]*index.Entry, error) {
 	return resolve(z, what, idx, params{prev: true, cycle: cycle})
 }
 
-func resolve(z *zap.SugaredLogger, what *index.Entry, idx *index.Index, p params) ([]*index.Entry, error) {
+func resolve(z *zlog.Logger, what *index.Entry, idx *index.Index, p params) ([]*index.Entry, error) {
 	if p.next && p.prev {
 		z.Panic("prev and next are mutually exclusive")
 	}

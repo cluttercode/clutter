@@ -5,16 +5,15 @@ import (
 	"path/filepath"
 	"strings"
 
-	"go.uber.org/zap"
-
 	"github.com/cluttercode/clutter/pkg/gitignore"
+	"github.com/cluttercode/clutter/pkg/zlog"
 )
 
 var defaultIgnores = []string{
 	".git",
 }
 
-func NewFilter(z *zap.SugaredLogger, cfg Config) (func(string, os.FileInfo) (bool, error), error) {
+func NewFilter(z *zlog.Logger, cfg Config) (func(string, os.FileInfo) (bool, error), error) {
 	if len(cfg.Ignore) == 0 {
 		cfg.Ignore = defaultIgnores
 	}
