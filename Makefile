@@ -25,6 +25,7 @@ bin: clutter
 .PHONY: clutter
 clutter:
 	go build -o $(BINDIR)/clutter $(GO_BUILD_OPTS) ./cmd/clutter
+	go build -o $(BINDIR)/clutter-nofsnotify --tags nofsnotify $(GO_BUILD_OPTS) ./cmd/clutter
 
 .PHONY: test
 test: test-unit test-end-to-end

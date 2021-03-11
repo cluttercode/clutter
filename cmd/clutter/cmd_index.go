@@ -6,7 +6,6 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/fsnotify/fsnotify"
 	cli "github.com/urfave/cli/v2"
 
 	"github.com/cluttercode/clutter/internal/pkg/index"
@@ -100,7 +99,7 @@ var (
 					return nil
 				}
 
-				watcher, err := fsnotify.NewWatcher()
+				watcher, err := fsnNewWatcher()
 				if err != nil {
 					return fmt.Errorf("watcher: %w", err)
 				}
@@ -153,7 +152,7 @@ var (
 							return
 
 						case event := <-watcher.Events:
-							if event.Op&(fsnotify.Write|fsnotify.Remove|fsnotify.Rename|fsnotify.Create) != 0 {
+							if event.Op&(fsnWrite|fsnRemove|fsnRename|fsnCreate) != 0 {
 								z.Infow("file modified", "event", event.Name)
 								done <- errRefresh
 								return

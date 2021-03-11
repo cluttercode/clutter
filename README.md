@@ -237,7 +237,6 @@ make install
 
 See [releases](https://github.com/cluttercode/clutter/releases).
 
-
 ## TODO
 
 - [ ] More tests.
